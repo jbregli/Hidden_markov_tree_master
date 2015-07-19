@@ -16,7 +16,7 @@ s_im = [10 10];
 n_state = 2;
 
 % Number of "images" in the set;
-n_image = 200;
+n_image = 20;
 
 %Number of optimization step:
 n_step = 100;
@@ -24,7 +24,7 @@ n_step = 100;
 % Model distribution:
 distribution = 'MixtGauss';
 % Epsilon uniform over the pixels of a father/son transition
-eps_uni= true;
+eps_uni= false;
 % Display error messages:
 verbose = true;
 
@@ -33,9 +33,10 @@ verbose = true;
 % Later in the code images are sampled from ground truth.
 % REAL DATA
 if real_data
-    directory = '/home/jeanbaptiste/Datasets/Texture/KTH_TIPS/';
-    label = 'corduroy/'; 
-    path_to_set = fullfile(directory, label);
+%     directory = '/home/jeanbaptiste/Datasets/Texture/KTH_TIPS/';
+%     label = 'corduroy/'; 
+%     path_to_set = fullfile(directory, label);
+    path_to_set = {'square', n_image, s_im};
 else
     path_to_set = {'square', n_image, s_im};
 end

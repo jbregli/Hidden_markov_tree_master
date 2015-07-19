@@ -40,7 +40,7 @@ function passTest = hmm_Scheck_sum(var_TBC, target, var_fnct, var_name,...
 %   --------
 %
 %   --------
-%   IMPROVEMENTS:
+%   TODO:
 %   --------
 %
     %% Preparation:

@@ -29,7 +29,7 @@ function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
 %       debugging.
 %
 %   --------
-%   IMPROVEMENTS:
+%   TODO:
 %   --------
 %   - Add threshold for P_{theta_k}(w_u)} in the arguments (optional maybe)
 %   - Use sanity checks as stopping signals.
@@ -52,21 +52,21 @@ function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
     n_state = size(theta{1}.proba{1}, 3);
     s_image = size(S{1}.signal{1});
 
-    n_elmt = zeros(1,n_layer);
+    n_scale = zeros(1,n_layer);
 
     % Structure to store the 'Beta'
     cond_up = cell(1, n_layer);
 
     for layer=1:n_layer
-        n_elmt(1,layer) = length(S{layer}.signal);
+        n_scale(1,layer) = length(S{layer}.signal);
 
         % Structure:
-        cond_up{layer}.Pvalue = cell(1,n_elmt(1,layer));
-        cond_up{layer}.beta.givenNode = cell(1,n_elmt(1,layer));
-        cond_up{layer}.beta.givenParent = cell(1,n_elmt(1,layer));
-        cond_up{layer}.beta.excludeChild = cell(1,n_elmt(1,layer));
+        cond_up{layer}.Pvalue = cell(1,n_scale(1,layer));
+        cond_up{layer}.beta.givenNode = cell(1,n_scale(1,layer));
+        cond_up{layer}.beta.givenParent = cell(1,n_scale(1,layer));
+        cond_up{layer}.beta.excludeChild = cell(1,n_scale(1,layer));
         % Initialization of the matrices:
-        for i=1:n_elmt(1,layer)
+        for i=1:n_scale(1,layer)
             cond_up{layer}.Pvalue{i} = zeros([s_image n_state]);
             cond_up{layer}.beta.givenNode{i} = zeros([s_image n_state]);
             cond_up{layer}.beta.givenParent{i} = zeros([s_image n_state]);
@@ -80,7 +80,7 @@ function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
     %% Initialisation:
     % P_{theta_k}(w_u)}
     for layer=n_layer:-1:1
-        for scale=1:n_elmt(1,layer)
+        for scale=1:n_scale(1,layer)
             cond_up{layer}.Pvalue{scale} = model_proba(S, theta, layer, ...
                 scale, mprob_thres);
 
@@ -94,7 +94,7 @@ function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
 
     % Loop over the leaves of the tree:
     for layer=n_layer:-1:1
-        for scale=1:n_elmt(1,layer)
+        for scale=1:n_scale(1,layer)
             % A leave has no children:
             if isempty(S{layer}.hmm{scale}.children)
                 %---------------------------------------------------------%
@@ -175,7 +175,7 @@ function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
     %% Induction:
     % Bottom-Up loop on the nodes of the tree
     for layer=(n_layer-1):-1:1
-        for scale=1:n_elmt(1,layer)
+        for scale=1:n_scale(1,layer)
             % Make sure this node is not a leaf:
             if not(isempty(S{layer}.hmm{scale}.children))
 

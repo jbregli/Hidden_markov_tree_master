@@ -40,9 +40,10 @@ function [proba, s_check, dob] = conditional_P(S, theta, hidStates, ...
 %   --------
 %
 %   --------
-%   IMPROVEMENTS:
+%   TODO:
 %   --------
 %   - Use sanity checks as matricial stopping signals.
+%   - Add a masking option to ignore some pixels
 
     %% Preparation:
     % Arguments:
@@ -55,31 +56,31 @@ function [proba, s_check, dob] = conditional_P(S, theta, hidStates, ...
     n_state = size(theta{1}.proba{1}, 3);
     s_image = size(S{1}.signal{1});
 
-    n_elmt = zeros(1,n_layer);
+    n_scale = zeros(1,n_layer);
 
     % Structure to store the 'proba'
     proba = cell(1, n_layer);
 
     for layer=1:n_layer
-        n_elmt(1,layer) = length(S{layer}.signal);
+        n_scale(1,layer) = length(S{layer}.signal);
 
         % Structure:
-        proba{layer}.ofNode = cell(1,n_elmt(1,layer));
-        proba{layer}.ofNodeAndParent = cell(1,n_elmt(1,layer));
+        proba{layer}.ofNode = cell(1,n_scale(1,layer));
+        proba{layer}.ofNodeAndParent = cell(1,n_scale(1,layer));
 
         % Initialize the matrices:
-        for i=1:n_elmt(1,layer)
+        for i=1:n_scale(1,layer)
             proba{layer}.ofNode{i} = zeros([s_image n_state]);
             proba{layer}.ofNodeAndParent{i} = zeros([s_image n_state n_state]);
         end
     end
 
     % Sanity_check:
-    s_check = ones(n_layer,max(n_elmt),4);
+    s_check = ones(n_layer,max(n_scale),4);
 
     %% P(s_u = k | w) & P(s_{rho(u)} = i, s_u = k | w):
     for layer=1:n_layer
-        for scale=1:n_elmt(1,layer)
+        for scale=1:n_scale(1,layer)
             % P(s_u=k |w) - Proba of hidden state given the node
             % P(s_u=k |w) = a_u(k) B_u(k)
             proba{layer}.ofNode{scale} = alpha{layer}{scale} ...

@@ -35,7 +35,7 @@ function [ theta, dob] = conditional_EM(set_S, n_step, ...
 %       containing the modelisation parameters.
 %
 %   --------
-%   IMPROVEMENTS:
+%   TODO:
 %   --------
 %   - Link the 'model' variable to control which familly of distribution is
 %       used for modelisation ('MixtGauss', 'FoldedGauss' ...).
@@ -76,9 +76,9 @@ function [ theta, dob] = conditional_EM(set_S, n_step, ...
 
     %% EM:
     step = 1;
-    cv_achieved = false;
+    cv_ach_bool = false;
 
-    while (step <= n_step && not(cv_achieved))
+    while (step <= n_step && not(cv_ach_bool))
         % Print remaining steps and times:
         if step == 1
             tic;
@@ -123,7 +123,7 @@ function [ theta, dob] = conditional_EM(set_S, n_step, ...
         end
 
         % Convergence testing:
-        cv_achieved = hmm_conv_test(theta, theta_old, step, mixing, ...
+        [cv_ach_struct, cv_ach_bool] = hmm_conv_test(theta, theta_old, step, mixing, ...
             cv_sens);
 
         % Step iteration
@@ -131,7 +131,7 @@ function [ theta, dob] = conditional_EM(set_S, n_step, ...
     end
 
     % Convergence:
-    if cv_achieved
+    if cv_ach_bool
         fprintf('--- Convergence achieved in %i steps. \n', step)
     else
         fprintf('--- Convergence has not yet been achieved after %i steps. \n', ...

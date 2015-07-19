@@ -36,7 +36,7 @@ function [theta, dob] = conditional_M(set_S, theta, set_hidStates, ...
 %   --------
 %
 %   --------
-%   IMPROVEMENTS:
+%   TODO:
 %   --------
 %   - Use sanity checks as stopping signals.
 %   - Lot of optimization possible in the computation of the betas
@@ -55,15 +55,15 @@ function [theta, dob] = conditional_M(set_S, theta, set_hidStates, ...
     n_image = length(set_hidStates);
     s_image = size(set_S{1}{1}.signal{1});
 
-    n_elmt = zeros(1,n_layer);
+    n_scale = zeros(1,n_layer);
 
     for layer=1:n_layer
-        n_elmt(1,layer) = length(set_S{1}{layer}.signal);
+        n_scale(1,layer) = length(set_S{1}{layer}.signal);
     end
 
     %% Update the parameter vector theta:
     for layer=1:n_layer
-        for scale=1:n_elmt(1,layer)
+        for scale=1:n_scale(1,layer)
             % Summing temporary variables:
             tmp_proba = zeros(size(theta{layer}.proba{1}));
             tmp_mu = zeros(size(theta{layer}.mu{1}));

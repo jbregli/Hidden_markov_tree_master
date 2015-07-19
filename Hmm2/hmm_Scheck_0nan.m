@@ -43,9 +43,10 @@ function passTest = hmm_Scheck_0nan(var_TBC, var_fnct, var_name,...
 %   --------
 %
 %   --------
-%   IMPROVEMENTS:
+%   TODO:
 %   --------
 %   - Return a vector of test (?)
+%   - Add a masking option to ignore some pixels
 
     %% Preparation:
     % Arguments:
@@ -61,13 +62,16 @@ function passTest = hmm_Scheck_0nan(var_TBC, var_fnct, var_name,...
     if ~exist('infty','var')
         infty = true;
     end
+    if ~exist('mask','var')
+        mask = find(ones(size(var_TBC)));
+    end
     
     % Test variable
     passTest = true * ones(1,nan + zero + infty);
 
     %% +++ Sanity check:
     if nan
-        if max(max(max(isnan(var_TBC))))
+        if max(max(max(isnan(var_TBC(mask)))))
             % Update test variable
             passTest(nan) = false;
             
@@ -79,7 +83,7 @@ function passTest = hmm_Scheck_0nan(var_TBC, var_fnct, var_name,...
         end
     end
     if zero
-        if max(max(max(var_TBC == 0))) == 1
+        if max(max(max(var_TBC(mask) == 0))) == 1
             % Update test variable
             passTest(nan+zeros) = false;
             
@@ -91,7 +95,7 @@ function passTest = hmm_Scheck_0nan(var_TBC, var_fnct, var_name,...
         end
     end
     if infty
-        if max(max(max(abs(var_TBC) == inf))) == 1
+        if max(max(max(abs(var_TBC(mask)) == inf))) == 1
             % Update test variable
             passTest(nan+zeros+infty) = false;
             

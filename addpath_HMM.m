@@ -24,8 +24,8 @@ addpath(fullfile(path_to_hmt, 'Hmm2'));
 addpath(fullfile(path_to_hmt, 'Script'));
 addpath(fullfile(path_to_hmt, 'Test'));
 
-% addpath(fullfile(path_to_hmt, '../scatnet-master'));
-% addpath_scatnet;
+addpath(fullfile(path_to_hmt, '../scatnet-master'));
+addpath_scatnet;
 
 
 clear path_to_hmt;

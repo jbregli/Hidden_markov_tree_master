@@ -26,7 +26,7 @@ function [hidStates, dob] = conditional_HIDDEN(S, theta, verbose)           % OK
 %       debugging.
 %
 %   --------
-%   IMPROVEMENTS:
+%   TODO:
 %   --------
 %   - Use sanity checks as stopping signals.
 
@@ -41,18 +41,18 @@ function [hidStates, dob] = conditional_HIDDEN(S, theta, verbose)           % OK
     n_state = size(theta{1}.proba{1}, 3);
     s_image = size(S{1}.signal{1});
 
-    n_elmt = zeros(1,n_layer);
+    n_scale = zeros(1,n_layer);
 
     % Structure to store the distribution:
     hidStates = cell(1, n_layer);
 
     for layer=1:n_layer
-        n_elmt(1,layer) = length(S{layer}.signal);
+        n_scale(1,layer) = length(S{layer}.signal);
 
         % Structure:
-        hidStates{layer}.ofHiddenStates = cell(1,n_elmt(1,layer));
+        hidStates{layer}.ofHiddenStates = cell(1,n_scale(1,layer));
         % Initialization the matrices:
-        for i=1:n_elmt(1,layer)
+        for i=1:n_scale(1,layer)
             hidStates{layer}.ofHiddenStates{i} = zeros([s_image n_state]);
         end
     end
@@ -66,7 +66,7 @@ function [hidStates, dob] = conditional_HIDDEN(S, theta, verbose)           % OK
     % Loop over the layers:
     for layer=2:n_layer
         % Loop over the 'scale' at the layer 'layer':
-        for scale=1:n_elmt(1,layer)
+        for scale=1:n_scale(1,layer)
             % Scale and layer of the father node:
             f_layer = layer-1;
             f_scale = S{layer}.hmm{scale}.parent;

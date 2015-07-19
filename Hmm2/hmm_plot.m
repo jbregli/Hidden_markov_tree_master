@@ -32,7 +32,7 @@ function hmm_plot(theta_est, theta_gt, parameter, layer, scale)
 %   --------
 %
 %   --------
-%   IMPROVEMENTS:
+%   TODO:
 %   --------
 %
     %% Preparation:

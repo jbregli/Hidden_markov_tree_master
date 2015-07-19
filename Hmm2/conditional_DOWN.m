@@ -32,7 +32,7 @@ function [alpha, dob] = conditional_DOWN(S, theta, hidStates, cond_up, ...
 %       debugging.
 %
 %   --------
-%   IMPROVEMENTS:
+%   TODO:
 %   --------
 %   - Use sanity checks as stopping signals.
 
@@ -47,18 +47,18 @@ function [alpha, dob] = conditional_DOWN(S, theta, hidStates, cond_up, ...
     n_state = size(theta{1}.proba{1}, 3);
     s_image = size(S{1}.signal{1});
 
-    n_elmt = zeros(1,n_layer);
+    n_scale = zeros(1,n_layer);
 
     % Structure to store the 'Alpha'
     alpha = cell(1, n_layer);
 
     for layer=1:n_layer
-        n_elmt(1,layer) = length(S{layer}.signal);
+        n_scale(1,layer) = length(S{layer}.signal);
 
         % Structure:
-        alpha{layer} = cell(1,n_elmt(1,layer));
+        alpha{layer} = cell(1,n_scale(1,layer));
         % Initialize the matrices:
-        for i=1:n_elmt(1,layer)
+        for i=1:n_scale(1,layer)
             alpha{layer}{i} = ones([s_image n_state]);
         end
     end
@@ -69,7 +69,7 @@ function [alpha, dob] = conditional_DOWN(S, theta, hidStates, cond_up, ...
 
     %% Induction:
     for layer=2:n_layer
-        for scale=1:n_elmt(1,layer)
+        for scale=1:n_scale(1,layer)
             % a_u - alpha
             % a_u(k) = sum_{i=1}^{K}(
             %               a_{rho(u)(i) eps_{u,rho(u)(i,k) B_{rho(u)\u}(i)
