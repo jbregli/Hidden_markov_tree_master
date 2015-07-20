@@ -18,7 +18,7 @@ function [cv_ach_struct, cv_ach_bool] = ...
 
     % Sizes:
     n_layer = length(theta);
-    n_elmt = zeros(1,n_layer);
+    n_scale = zeros(1,n_layer);
     s_image = size(theta{1}.proba{1}(:,:,1));
     n_state = size(theta{1}.proba{1},3);
 
@@ -26,16 +26,16 @@ function [cv_ach_struct, cv_ach_bool] = ...
     cv_ach_struct = cell(1, n_layer);
     
     for layer=1:n_layer
-        n_elmt(1,layer) = length(theta{layer}.proba);
+        n_scale(1,layer) = length(theta{layer}.proba);
 
         % Structure:
-        cv_ach_struct{layer}.proba = cell(1,n_elmt(1,layer));
-        cv_ach_struct{layer}.epsilon = cell(1,n_elmt(1,layer));
-        cv_ach_struct{layer}.mu = cell(1,n_elmt(1,layer));
-        cv_ach_struct{layer}.sigma = cell(1,n_elmt(1,layer));
+        cv_ach_struct{layer}.proba = cell(1,n_scale(1,layer));
+        cv_ach_struct{layer}.epsilon = cell(1,n_scale(1,layer));
+        cv_ach_struct{layer}.mu = cell(1,n_scale(1,layer));
+        cv_ach_struct{layer}.sigma = cell(1,n_scale(1,layer));
         
         % Initialization of the matrices:
-        for scale=1:n_elmt(1,layer)
+        for scale=1:n_scale(1,layer)
             cv_ach_struct{layer}.proba{scale} = zeros([s_image n_state]);
             cv_ach_struct{layer}.epsilon{scale} = zeros([s_image n_state n_state]); 
             cv_ach_struct{layer}.mu{scale} = zeros([s_image n_state]);
@@ -57,7 +57,7 @@ function [cv_ach_struct, cv_ach_bool] = ...
             % Loop over the layers:
             for layer=1:n_layer
                 %  Loop over the scales at 'layer':
-                for scale=1:n_elmt(1,layer)
+                for scale=1:n_scale(1,layer)
                     for i=1:numel(fields)
                         % Delta:
                         cv_ach_struct{layer}.(fields{i}){scale} = ...

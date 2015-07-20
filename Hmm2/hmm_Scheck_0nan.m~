@@ -1,6 +1,6 @@
-function [nan_check_bool, nan_check_mat] = ...
-    hmm_Scheck_0nan(var_TBC, var_fnct, var_name, layer, scale, verbose, ...
-        nan, zero, infty)
+function nan_check_bool = hmm_Scheck_0nan(var_TBC, var_fnct, var_name,...
+                                            layer, scale, verbose, ...
+                                            nan, zero, infty)
 %hmm_Scheck_0nan: PERFORM A SANITY CHECK ON THE GIVEN VARIABLE 
 %   Is there any 0, NaN, or infinite values.
 %
@@ -73,7 +73,7 @@ function [nan_check_bool, nan_check_mat] = ...
     if nan
         nan_c_mat = isnan(var_TBC);
         
-        if max(max(max(nan_c_mat)))
+        if max(max(max(nan_check_mat)))
             % Update test variable
             nan_check_bool(nan) = false;
             
@@ -99,9 +99,9 @@ function [nan_check_bool, nan_check_mat] = ...
         end
     end
     if infty
-        inf_c_mat = abs(var_TBC) == inf;
+        zero
         
-        if max(max(max(zero_c_mat))) == 1
+        if max(max(max(abs(var_TBC(mask)) == inf))) == 1
             % Update test variable
             nan_check_bool(nan+zeros+infty) = false;
             
@@ -115,6 +115,5 @@ function [nan_check_bool, nan_check_mat] = ...
     
     % +++ Better if passing a vector but quick fix:
     nan_check_bool = min(nan_check_bool);
-    nan_check_mat = max(max(nan_c_mat, zero_c_mat), inf_c_mat);
  
 end

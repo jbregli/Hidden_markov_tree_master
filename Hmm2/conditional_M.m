@@ -1,5 +1,6 @@
-function [theta, dob] = conditional_M(set_S, theta, set_hidStates, ...
-    set_proba, eps_uni, mask, theta_old, verbose)
+function [theta, check_strct, dob] = ...
+    conditional_M(set_S, theta, set_hidStates, set_proba, eps_uni, mask, ...
+    theta_old, verbose)
 % conditional_M: COMPUTE THE MAXIMISATION STEP OF THE EXPECTATION
 %                MAXIMISATION ALGORITHM
 %
@@ -58,9 +59,20 @@ function [theta, dob] = conditional_M(set_S, theta, set_hidStates, ...
     s_image = size(set_S{1}{1}.signal{1});
 
     n_scale = zeros(1,n_layer);
-
+    
+    % Structure to store checks:
+    check_strct = cell(1, n_layer);
+    
     for layer=1:n_layer
         n_scale(1,layer) = length(set_S{1}{layer}.signal);
+        
+        % Structure:
+        check_strct{layer} = cell(1,n_scale(1,layer));
+
+        % Initialization of the matrices:
+        for scale=1:n_scale(1,layer)
+            check_strct{layer}{scale} = zeros([s_image n_state]);
+        end      
     end
 
     %% Update the parameter vector theta:
@@ -85,11 +97,6 @@ function [theta, dob] = conditional_M(set_S, theta, set_hidStates, ...
             % P_{s_u}(k) = 1/n_im sum_{i=1}^{n_im} P(s_u^i = k|w^i, theta)
             for im=1:n_image
                 tmp_proba = tmp_proba + set_proba{im}{layer}.ofNode{scale};
-
-                % +++ Sanity check:
-                check_nan = hmm_Scheck_0nan(tmp_proba, 'cond_M', ...
-                    'tmp_proba', layer, im, verbose);
-
             end
 
             % Normalize 'proba':
@@ -104,11 +111,7 @@ function [theta, dob] = conditional_M(set_S, theta, set_hidStates, ...
                 % eps_{u,rho(u)}^{jk} =  P(s_u^i = k s_{rho(u)=j |w^i, theta)
                 %                           / (K P(s_rho(u)=k)
                 for im=1:n_image
-                    % Sum epsilon:
-                    if length(size(tmp_epsilon)) ~= length(size(set_proba{im}{layer}.ofNodeAndParent{scale}))
-                        a = 0;
-                    end
-                    
+                    % Sum epsilon:                   
                     % +aaa+++ Test for uniform epsilon
                     if eps_uni
                           tmp_epsilon = tmp_epsilon + ...
@@ -129,13 +132,6 @@ function [theta, dob] = conditional_M(set_S, theta, set_hidStates, ...
                     tmp_sigma = tmp_sigma ...
                         + ((tmp_W - theta{layer}.mu{scale}).^2 ...
                         .* set_proba{im}{layer}.ofNode{scale});
-
-                    % +++
-                    check_nan = hmm_Scheck_0nan(tmp_sigma, 'cond_UP_init', ...
-                        'tmp_sigma', layer, scale, ...
-                        verbose);
-                    check_nan = hmm_Scheck_0nan(tmp_mu, 'cond_UP_init', ...
-                        'tmp_mu', layer, scale, verbose);
                 end
 
                 % Resizing the father probability for matrix product from
@@ -161,24 +157,17 @@ function [theta, dob] = conditional_M(set_S, theta, set_hidStates, ...
                 % Normalize 'epsilon':                                     % ISSUE: epsilon is not summing to 1
                 tmp_epsilon = tmp_epsilon ./ (n_image .* tmp_father);
 
-%                 %+++ SANITY CHECKS:
-%                 % sum:
-%                 check_sum = hmm_Scheck_sum(tmp_epsilon, ...
-%                     ones(size(tmp_epsilon(:,:,1,:))),...
-%                     'Cond_M', 'Epsilon', '[1]', layer, scale, ...
-%                     verbose);
-%                 % +++
-
                 % Normalize 'mu':
                 tmp_mu = tmp_mu ./ (n_image * theta{layer}.proba{scale});
 
                 % Try to avoid overflow by tresholding:
-                %tmp_mu = tmp_mu.*(tmp_mu>1e-4) + 1e-4*(tmp_mu<=1e-4);
+                tmp_mu = tmp_mu.*(tmp_mu>1e-4) + 1e-4*(tmp_mu<=1e-4);
 
                 % Normalise 'sigma':
                 tmp_sigma = sqrt(tmp_sigma ./ (n_image * theta{layer}.proba{scale}));
+                
                 % Try to avoid overflow by tresholding:
-                %tmp_sigma = tmp_sigma.*(tmp_sigma>1e-4) + 1e-4*(tmp_sigma<=1e-4);
+                tmp_sigma = tmp_sigma.*(tmp_sigma>1e-4) + 1e-4*(tmp_sigma<=1e-4);
 
                 %% Updates:
                 % Epsilon:
@@ -229,15 +218,19 @@ function [theta, dob] = conditional_M(set_S, theta, set_hidStates, ...
                             theta_old{layer}.proba{scale};
 
             % +++ SANITY CHECKS:
-            % 0 or Nan:
-            check_nan = hmm_Scheck_0nan(theta{layer}.proba{scale},...
-                'cond_M', 'theta.proba', layer, scale, verbose);
-            check_nan = hmm_Scheck_0nan(theta{layer}.mu{scale},...
-                'cond_M', 'theta.mu', layer, scale, verbose);
-            check_nan = hmm_Scheck_0nan(theta{layer}.sigma{scale},...
-                'cond_M', 'theta.sigma', layer, scale, verbose);
-            check_nan = hmm_Scheck_0nan(theta{layer}.proba{scale},...
-                'cond_M', 'theta.proba', layer, scale, verbose);
+            % 0 or Nan:         
+            check_strct{layer}{scale} = ...
+                max(check_strct{layer}{scale},  ...
+                    hmm_Scheck_0nan(theta{layer}.mu{scale},...
+                        'cond_M', 'theta.mu', layer, scale, verbose));
+            check_strct{layer}{scale} = ...
+                max(check_strct{layer}{scale},  ...
+                    hmm_Scheck_0nan(theta{layer}.sigma{scale},...
+                        'cond_M', 'theta.sigma', layer, scale, verbose));
+            check_strct{layer}{scale} = ...
+                max(check_strct{layer}{scale},  ...
+                    hmm_Scheck_0nan(theta{layer}.proba{scale},...
+                        'cond_M', 'theta.proba', layer, scale, verbose)); 
         end
     end
 end
