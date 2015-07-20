@@ -1,5 +1,5 @@
-function [theta] = hmm_prepare_Theta(set_S, n_state, distribution, ...
-                                     eps_uni, verbose)
+function [theta, theta_old] = ...
+    hmm_prepare_Theta(set_S, n_state, distribution, eps_uni, verbose)
 % hmm_prepare_Theta:  CREATE THE STRUCTURE TO STORE THE TREE PARAMETERS.
 %   Given a scattering transform (cell of structure), this functions 
 %   associates to each node the required fields for the HMM modeling.
@@ -35,6 +35,8 @@ function [theta] = hmm_prepare_Theta(set_S, n_state, distribution, ...
 %       theta{layer}.mu{index}
 %       theta{layer}.sigma{index}
 %       theta{layer}.distr{index}
+%   - theta_old: (optional) cell(struct)
+%       Same structure as theta but all initializd to 0.
 %
 %   --------
 %   IMPROVEMENTS:
@@ -68,6 +70,7 @@ function [theta] = hmm_prepare_Theta(set_S, n_state, distribution, ...
 
     % Theta:
     theta = cell(s_ST);
+    theta_old = cell(s_ST);
 
     %% Initialisation values for mean and variance:
     mu = cell(s_ST);
@@ -110,19 +113,21 @@ function [theta] = hmm_prepare_Theta(set_S, n_state, distribution, ...
         theta{layer}.mu = cell(1, n_elmt(1,layer));
         theta{layer}.sigma = cell(1, n_elmt(1,layer));
         theta{layer}.distr = distribution;
-
+        
+        % Same for 'theta_old':
+        theta_old{layer}.proba = cell(1, n_elmt(1,layer));
+        theta_old{layer}.epsilon = cell(1, n_elmt(1,layer));
+        theta_old{layer}.mu = cell(1, n_elmt(1,layer));
+        theta_old{layer}.sigma = cell(1, n_elmt(1,layer));
+        theta_old{layer}.distr = distribution;
+        
         % Over all the orientation and scale:
         for scale=1:n_elmt(1,layer)
 
             % PROBABILITY:
             % First layer: Multinomial distribution - Tabular CPD :
-            if layer == 1
-                % P_{S1}(m):
-                theta{layer}.proba{scale} = 1/n_state * ones([s_image, n_state]);
-            else
-                theta{layer}.proba{scale} = 1/n_state * ones([s_image, n_state]);
-                %theta{layer}.proba{scale} = zeros([s_im, n_state]);
-            end
+            theta{layer}.proba{scale} = 1/n_state * ones([s_image, n_state]);
+            theta_old{layer}.proba{scale} = zeros([s_image, n_state]);
 
             % MEANS MU AND VARIANCES SIGMA
             max_mu = max(max(mu{layer}{scale}));
@@ -136,6 +141,8 @@ function [theta] = hmm_prepare_Theta(set_S, n_state, distribution, ...
                 % Variance parameter - as many var params as states
                 theta{layer}.sigma{scale}(:,:,m) = sigma{layer}{scale};
             end
+            theta_old{layer}.mu{scale} = zeros([s_image, n_state]);
+            theta_old{layer}.sigma{scale} = zeros([s_image, n_state]);
 
             % TRANSITION PROBABILITIES - Tabular CPD
             % For each pixel n_state x n_state posible transitions stored
@@ -172,13 +179,12 @@ function [theta] = hmm_prepare_Theta(set_S, n_state, distribution, ...
                 theta{layer}.epsilon{scale} = ...
                     hmm_prepare_normalEps(theta{layer}.epsilon{scale});
             end
+            theta_old{layer}.epsilon{scale} = zeros([s_image, n_state, n_state]);         
+            
             %+++
             s_check = hmm_Scheck_sum(theta{layer}.epsilon{scale}, ...
                 ones(size(sum(theta{layer}.epsilon{scale},4))),...
                 'Prep_theta', 'Epsilon', '[1]', layer, scale, verbose);
-            if not(s_check)
-                a = 0;
-            end
             % +++
         end
     end

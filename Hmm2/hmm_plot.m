@@ -40,7 +40,7 @@ function hmm_plot(theta_est, theta_gt, parameter, layer, scale)
     
     % Arguments (part 1):
     if ~exist('theta_gt','var')
-        theta_gt = false;
+        theta_gt = {};
     end
     if ~exist('parameter','var')
         parameter = 'distribution';
@@ -80,7 +80,7 @@ function hmm_plot(theta_est, theta_gt, parameter, layer, scale)
             x = randi(s_image(1));
             y = randi(s_image(2));
             
-            if not(theta_gt)
+            if ~isempty(theta_gt)
                 % Means and variances for the estimate:
                 mu_est = squeeze(theta_est{layer}.mu{scale}(x,y,:));
                 sigma_est = squeeze(theta_est{layer}.sigma{scale}(x,y,:));
@@ -95,7 +95,7 @@ function hmm_plot(theta_est, theta_gt, parameter, layer, scale)
 
             switch distrib
                 case 'MixtGauss'
-                    if not(theta_gt)
+                    if ~isempty(theta_gt)
                         Xmin = mu_est - 3 * sigma_est;
                         Xmax = mu_est + 3 * sigma_est;
 

@@ -1,4 +1,4 @@
-function passTest = hmm_Scheck_0nan(var_TBC, var_fnct, var_name,...
+function nan_check_bool = hmm_Scheck_0nan(var_TBC, var_fnct, var_name,...
                                             layer, scale, verbose, ...
                                             nan, zero, infty)
 %hmm_Scheck_0nan: PERFORM A SANITY CHECK ON THE GIVEN VARIABLE 
@@ -67,13 +67,13 @@ function passTest = hmm_Scheck_0nan(var_TBC, var_fnct, var_name,...
     end
     
     % Test variable
-    passTest = true * ones(1,nan + zero + infty);
+    nan_check_bool = true * ones(1,nan + zero + infty);
 
     %% +++ Sanity check:
     if nan
         if max(max(max(isnan(var_TBC(mask)))))
             % Update test variable
-            passTest(nan) = false;
+            nan_check_bool(nan) = false;
             
             % Optional print:
             if verbose
@@ -85,7 +85,7 @@ function passTest = hmm_Scheck_0nan(var_TBC, var_fnct, var_name,...
     if zero
         if max(max(max(var_TBC(mask) == 0))) == 1
             % Update test variable
-            passTest(nan+zeros) = false;
+            nan_check_bool(nan+zeros) = false;
             
             % Optional print:
             if verbose
@@ -97,7 +97,7 @@ function passTest = hmm_Scheck_0nan(var_TBC, var_fnct, var_name,...
     if infty
         if max(max(max(abs(var_TBC(mask)) == inf))) == 1
             % Update test variable
-            passTest(nan+zeros+infty) = false;
+            nan_check_bool(nan+zeros+infty) = false;
             
             % Optional print:
             if verbose
@@ -108,6 +108,6 @@ function passTest = hmm_Scheck_0nan(var_TBC, var_fnct, var_name,...
     end
     
     % +++ Better if passing a vector but quick fix:
-    passTest = min(passTest);
+    nan_check_bool = min(nan_check_bool);
  
 end

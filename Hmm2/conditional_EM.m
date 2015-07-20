@@ -68,7 +68,12 @@ function [ theta, dob] = conditional_EM(set_S, n_step, ...
     set_proba = cell(1,n_image);
 
     % Theta:
-    theta = hmm_prepare_Theta(set_S, n_state, distribution, eps_uni, verbose);
+    [theta, theta_old] = ...
+        hmm_prepare_Theta(set_S, n_state, distribution, eps_uni, verbose);
+    
+    % Convergence test:
+    [cv_ach_strct, cv_ach_bool] = ...
+        hmm_conv_test(theta, theta_old, 1, 'init', 'true');
 
     % Display:
     fprintf('* EM algorithm: \n');
@@ -76,7 +81,6 @@ function [ theta, dob] = conditional_EM(set_S, n_step, ...
 
     %% EM:
     step = 1;
-    cv_ach_bool = false;
 
     while (step <= n_step && not(cv_ach_bool))
         % Print remaining steps and times:
@@ -96,11 +100,10 @@ function [ theta, dob] = conditional_EM(set_S, n_step, ...
 
         end
 
-        % +++ Debuging object:
-        dob.theta_old = theta;
-
         % Old theta for convergence testing:
-        theta_old = theta;
+        if step > 1
+            theta_old = theta;
+        end
 
         % s_check matrix:
         s_check = ones(1,n_image);
@@ -116,14 +119,15 @@ function [ theta, dob] = conditional_EM(set_S, n_step, ...
 
         % Maximisation:
         if min(s_check) == 1
-            theta = conditional_M(set_S, theta, set_hidStates, set_proba, eps_uni, verbose);
+            theta = conditional_M(set_S, theta, set_hidStates, set_proba, ...
+                eps_uni, cv_ach_strct, theta_old, verbose);
         else
             fprintf('--- Breaking... \n')
             break
         end
 
         % Convergence testing:
-        [cv_ach_struct, cv_ach_bool] = hmm_conv_test(theta, theta_old, step, mixing, ...
+        [cv_ach_strct, cv_ach_bool] = hmm_conv_test(theta, theta_old, step, mixing, ...
             cv_sens);
 
         % Step iteration
