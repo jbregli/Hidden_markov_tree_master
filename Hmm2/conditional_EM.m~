@@ -60,8 +60,10 @@ function [ theta, dob] = conditional_EM(set_S, n_step, ...
     end
     if ~exist('cv_sens','var')
         cv_sens = 1e-3;
-    end    
-   
+    end
+    
+    cv_sens
+    
     % Variables (2):
     n_image = length(set_S);
     set_hidStates = cell(1,n_image);
@@ -110,8 +112,6 @@ function [ theta, dob] = conditional_EM(set_S, n_step, ...
     y = randi(s_image(2));
 
     %% EM:
-    step = 1;
-
     while (step <= n_step && not(cv_ach_bool))
         % Print remaining steps and times:
         if step == 1
@@ -172,6 +172,7 @@ function [ theta, dob] = conditional_EM(set_S, n_step, ...
             lay, scal, lay, scal, mat2str(squeeze(theta{lay}.epsilon{scal}(x,y,:)-theta_old{lay}.epsilon{scal}(x,y,:))));        
 
         if cv_ach_bool
+            disp('--- Breaking ---')
             break
         end
 

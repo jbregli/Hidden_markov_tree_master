@@ -15,7 +15,7 @@ function [cv_ach_strct, cv_ach_bool] = ...
     if ~exist('init','var')
         init= false;
     end
-    
+   
     % Sizes:
     n_layer = length(theta);
     n_scale = zeros(1,n_layer);
@@ -55,11 +55,12 @@ function [cv_ach_strct, cv_ach_bool] = ...
         end
     end
     
+    cv_ach_bool = true;
+    
     %% Convergence test:
     % If the number of step is too small then cv didn't occur (burning
     % time)
     if ~init
-        cv_ach_bool = true;
         if step < mixing
             cv_ach_bool = false;
         else
@@ -89,17 +90,11 @@ function [cv_ach_strct, cv_ach_bool] = ...
                                         cv_ach_strct{layer}.general{scale}, ...
                                         cv_ach_strct{layer}.(fields{i}){scale});
                             else
-                                tmp_cv = sum(cv_ach_strct{layer}.(fields{i}){scale},4);
-                                tmp_cv(tmp_cv <= 1) = 0;
-                                tmp_cv(tmp_cv > 1) = 1 ;
-                                
-                                cv_ach_strct{layer}.general{scale} = ...
-                                    max(tmp_cv, ...
-                                        cv_ach_strct{layer}.general{scale});
+                                tmp_cv = sum
                             end
 
                             % Convergence boolean:
-                            if any(any(any(any(cv_ach_strct{layer}.(fields{i}){scale} == 0))))
+                            if any(any(any(cv_ach_strct{layer}.(fields{i}){scale}) == 0))
                                 cv_ach_bool = false;
                             end      
                         end
@@ -107,8 +102,6 @@ function [cv_ach_strct, cv_ach_bool] = ...
                 end
             end
         end
-    else
-        cv_ach_bool = false;
     end
 end
 

@@ -9,14 +9,14 @@
 %close all
 
 %% Initialization:
-real_data = false;
+real_data = true;
 
 % Size of the simulated images:
 s_im = [10 10];
-n_state = 2;
+n_state = 3;
 
 % Number of "images" in the set;
-n_image = 20;
+n_image = 50;
 
 %Number of optimization step:
 n_step = 100;
@@ -27,6 +27,8 @@ distribution = 'MixtGauss';
 eps_uni= false;
 % Display error messages:
 verbose = true;
+% Sensibility f the convergence test:
+cv_sens = 1e-3;
 
 %% Creating the proper tree structure:
 % The scattering coefficients are not used yet. 
@@ -62,17 +64,32 @@ if real_data
 else
     %% Theta for simultation:
     % Each node is a mixture of 2 gaussians:
-    mu_L = 1; sigma_L = .1;
-    mu_H = 5; sigma_H = .1;
-    dist_param = {{mu_L sigma_L} {mu_H sigma_H}};
+    mu_L = 1; sigma_L = .2;
+    mu_H = 5; sigma_H = .5;
+    
+    if n_state == 2
+        dist_param = {{mu_L sigma_L} {mu_M sigma_M} {mu_H sigma_H}};
+        
+        % Transition proba:
+        % | (1)L-L  (3)L-H |
+        % | (2)H-L  (4)H-H |
+        epsilon = [0.8 0.1; 0.2 0.9]; 
+        
+        % Root node proba:
+        rn_prob = [0.5 0.5];
+        
+    elseif n_state == 3
+        mu_M = 2; sigma_M = .2;
+        dist_param = {{mu_L sigma_L} {mu_H sigma_H}};
 
-    % Transition proba:
-    % | (1)L-L  (3)L-H |
-    % | (2)H-L  (4)H-H |
-    epsilon = [0.7 0.1; 0.3 0.9];
+        % Transition proba:
+        epsilon = [0.7 0.2 0.1; 0.1 0.7 0.2; 0.2 0.1 0.7];
 
-    % Root node proba:
-    rn_prob = [0.3 0.7];
+        % Root node proba:
+        rn_prob = [0.3 0.3 0.4];
+    else
+        fprintf('This script can only handle simultations with 2 or 3 gaussian distribution mixed')
+    end
 
     %% Reformat the tree:
     for l=1:length(S)
@@ -88,10 +105,10 @@ else
 end
 
 % REAL DATA:
-% for im=1:length(set_S)
-%     set_S{im} = hmm_prepare_S( set_S{im}, n_state);
-% end
+for im=1:length(set_S)
+    set_S{im} = hmm_prepare_S( set_S{im}, n_state);
+end
 
 %% Hmm model:
 [theta, dob] = conditional_EM(set_S, n_step, n_state, distribution, ...
-                              eps_uni, verbose);
+                              eps_uni, verbose, 10, cv_sens);
