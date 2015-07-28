@@ -9,11 +9,11 @@
 %close all
 
 %% Initialization:
-real_data = true;
+real_data = false;
 
 % Size of the simulated images:
 s_im = [10 10];
-n_state = 3;
+n_state = 2;
 
 % Number of "images" in the set;
 n_image = 50;
@@ -26,7 +26,7 @@ distribution = 'MixtGauss';
 % Epsilon uniform over the pixels of a father/son transition
 eps_uni= false;
 % Display error messages:
-verbose = true;
+verbose = false;
 % Sensibility f the convergence test:
 cv_sens = 1e-3;
 
@@ -64,11 +64,11 @@ if real_data
 else
     %% Theta for simultation:
     % Each node is a mixture of 2 gaussians:
-    mu_L = 1; sigma_L = .2;
+    mu_L = 1; sigma_L = .3;
     mu_H = 5; sigma_H = .5;
     
     if n_state == 2
-        dist_param = {{mu_L sigma_L} {mu_M sigma_M} {mu_H sigma_H}};
+        dist_param = {{mu_L sigma_L} {mu_H sigma_H}};
         
         % Transition proba:
         % | (1)L-L  (3)L-H |
@@ -80,7 +80,7 @@ else
         
     elseif n_state == 3
         mu_M = 2; sigma_M = .2;
-        dist_param = {{mu_L sigma_L} {mu_H sigma_H}};
+        dist_param = {{mu_L sigma_L} {mu_M sigma_M} {mu_H sigma_H}};
 
         % Transition proba:
         epsilon = [0.7 0.2 0.1; 0.1 0.7 0.2; 0.2 0.1 0.7];

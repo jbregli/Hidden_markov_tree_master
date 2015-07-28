@@ -28,8 +28,8 @@ function [proba, check_strct, s_check, dob] = ...
 %   --------
 %   OUTPUTS:
 %   --------
-%   - set_S: cell(struct)
-%       Set of structures updated
+%   - proba: cell(struct)
+%       Conditional probabilities
 %   - s_check: (optional) bool
 %       Have the conditional probabilities passed the test?
 %   - dob: (optional) struct

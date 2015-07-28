@@ -72,46 +72,70 @@ function hmm_plot_distr(set_S, theta_est, cv_achieved, layer, scale, x, y, fig)
     %% Plot:
     % Title:
     p_title = sprintf('Distribution at layer %i and scale %i', layer, scale);
-               
-    % Means and variances for the estimate:
-    if layer == 1
-        mu_est = squeeze(theta_est{layer}.proba{scale}(x,y,:));
-        sigma_est = [0 0];
-    else
-        mu_est = squeeze(theta_est{layer}.mu{scale}(x,y,:));
-        sigma_est = squeeze(theta_est{layer}.sigma{scale}(x,y,:));
-    end
-        
+    
+    % Pixel value distribution:
     for im = 1:n_image
         cluster(im) = set_S{im}{layer}.signal{scale}(x,y);
     end
-       
-    figure(fig)
-    subplot(2,1,1);
-    %hax = get(gca,'axes'); 
-       
-    hold on
-    hist(cluster)
-    
-    for state=1:n_state
-        % Mean bar:
-        line([mu_est(state) mu_est(state)], ...
-            0.75*get(gca,'YLim'), 'Color', colors(state),...
-            'LineWidth',5);
-        % Variance bar:
-        line([mu_est(state)-sigma_est(state) mu_est(state)+sigma_est(state)], ...
-            [1 1], ...
-            'Color', colors(state), ...
-            'LineWidth',5);
-    end
+               
+    % Means and variances for the estimate:
+    if layer == 1
+        % For the layer 1 there is only the probability of states to be
+        % ploted.
+        % Estimated probabilities of state:
+        proba_est = squeeze(theta_est{layer}.proba{scale}(x,y,:));
+        
+        % Plot:       
+        figure(fig)
+        hold on
+        hist(cluster)
+        
+        for state=1:n_state
+            % Probability bars:
+            line([proba_est(state) proba_est(state)], ...
+                0.75*get(gca,'YLim'), 'Color', colors(state),...
+                'LineWidth',5);
+        end
+        
+        title(p_title);
+        
+    else
+        % Estimated means and variances for each states:
+        mu_est = squeeze(theta_est{layer}.mu{scale}(x,y,:));
+        sigma_est = squeeze(theta_est{layer}.sigma{scale}(x,y,:));
 
-    title(sprintf('Pixel (%i,%i) - Layer %i - Scale %i', x,y, layer, scale));
-    hold off
+        % Plots:
+        figure(fig)
+        
+        % Subplot 1: Means and variances:
+        subplot(2,1,1);
+        hold on
+        
+        hist(cluster)
+  
+        for state=1:n_state
+            % Mean bars:
+            line([mu_est(state) mu_est(state)], ...
+                0.75*get(gca,'YLim'), 'Color', colors(state),...
+                'LineWidth',5);
+            % Variance bars:
+            line([mu_est(state)-sigma_est(state) mu_est(state)+sigma_est(state)], ...
+                [1 1], ...
+                'Color', colors(state), ...
+                'LineWidth',5);
+        end
+        
+        title(p_title);
+        hold off
+        
+        subplot(2,1,2);
+        imagesc(squeeze(cv_achieved{layer}.epsilon{scale}(x,y,:,:)))
+        colormap gray; 
+        
+        title(sprintf('Transition matrix convergence status at layer %i and scale %i', layer, scale));
+    end
     
-    subplot(2,1,2);
-    imagesc(squeeze(cv_achieved{layer}.epsilon{scale}(x,y,:,:)))
-    colormap gray;
-    
+    % Update the plot:
     drawnow
        
 end
