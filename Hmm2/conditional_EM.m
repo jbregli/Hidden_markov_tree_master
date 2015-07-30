@@ -53,7 +53,7 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
         eps_uni= true;
     end
     if ~exist('verbose','var')
-        verbose = true;
+        verbose = false;
     end
     if ~exist('mixing','var')
         mixing = floor(n_step/10);

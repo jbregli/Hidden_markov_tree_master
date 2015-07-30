@@ -19,14 +19,14 @@ n_state = 2;
 n_image = 50;
 
 % Number of optimization step:
-n_step = 100;
+n_step = inf;
 
 % Model distribution:
 distribution = 'MixtGauss';
 % Epsilon uniform over the pixels of a father/son transition
 eps_uni= false;
 % Display error messages:
-verbose = false;
+verbose = true;
 % Sensibility f the convergence test:
 cv_sens = 1e-6;
 

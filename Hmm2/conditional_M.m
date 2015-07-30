@@ -52,7 +52,7 @@ function [theta, dob] = ...
 %   the "old" value. In the check function add a ignore variable. 
 
 % TB added as a variable
-cv_lim = 500;
+cv_lim = 5;
 
 
     %% Preparation:

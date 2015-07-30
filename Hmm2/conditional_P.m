@@ -22,7 +22,7 @@ function [proba, check_strct, s_check, dob] = ...
 %       probabilities of the model.
 %   - alpha: cell(struct)
 %       Cell of structures containing the values of 'Alpha'.
-%   - verbose: (optional) bool (default= true)
+%   - verbose: (optional) bool (default= false)
 %       If true then 'hmm_Scheck_sum' displays debugging info.
 %
 %   --------
@@ -49,7 +49,7 @@ function [proba, check_strct, s_check, dob] = ...
     %% Preparation:
     % Arguments:
     if ~exist('verbose','var')
-        verbose = true;
+        verbose = false;
     end
 
     % Sizes and structure to store the distribution:
@@ -146,7 +146,7 @@ function [proba, check_strct, s_check, dob] = ...
             [tmp_strct, tmp_bool] = ...
                 hmm_Scheck_0nan(proba{layer}.ofNode{scale}, 'cond_P', ...
                     'proba_of_node', layer, scale, ...
-                    cv_strct{layer}.general{scale}, verbose);
+                    cv_strct{layer}.pixel{scale}, verbose);
             
             % Update check_strct:
             check_strct{layer}{scale} = max(check_strct{layer}{scale}, ...

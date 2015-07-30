@@ -1,5 +1,5 @@
 function [nan_check_mat, nan_check_bool] = ...
-    hmm_Scheck_0nan(var_TBC, var_fnct, var_name, layer, scale, cv_test, ...
+    hmm_Scheck_0nan(var_TBC, var_fnct, var_name, layer, scale, ...
         verbose, nan, zero, infty)
 %hmm_Scheck_0nan: PERFORM A SANITY CHECK ON THE GIVEN VARIABLE 
 %   Is there any 0, NaN, or infinite values.
@@ -46,12 +46,12 @@ function [nan_check_mat, nan_check_bool] = ...
 %   TODO:
 %   --------
 %   - Return a vector of test (?)
-%   - Add a masking option to ignore some pixels
+%   - Add a masking option based on the convergence status of each pixel.
 
     %% Preparation:
     % Arguments:
     if ~exist('verbose','var')
-        verbose = true;
+        verbose = false;
     end
     if ~exist('nan','var')
         nan = true;
@@ -69,11 +69,11 @@ function [nan_check_mat, nan_check_bool] = ...
     % Test variable
     nan_check_bool = false * zeros(1,nan + zero + infty);
     
-    % Resize cv_test if necessary:
-    if length(size(cv_test)) ~= length(size(var_TBC))
-        cv_test = repmat(cv_test,1,1,1,size(cv_test,3));
-    end
-
+%     % Resize cv_test if necessary:
+%     if length(size(cv_test)) ~= length(size(var_TBC))
+%         cv_test = repmat(cv_test,1,1,1,size(cv_test,3));
+%     end
+    
     %% +++ Sanity check:
     if nan
         nan_c_mat = isnan(var_TBC);
@@ -89,6 +89,7 @@ function [nan_check_mat, nan_check_bool] = ...
             end
         end
     end
+    
     if zero
         zero_c_mat = var_TBC == 0;
         
@@ -100,13 +101,10 @@ function [nan_check_mat, nan_check_bool] = ...
             if verbose
                 disp([var_fnct ': 0 ' var_name ' at layer ' num2str(layer) ...
                     ' and scale ' num2str(scale)])
-                
-%                 % +++
-%                 zero_c_mat - cv_test
             end
-            
         end
     end
+    
     if infty
         inf_c_mat = abs(var_TBC) == inf;
         
@@ -122,7 +120,6 @@ function [nan_check_mat, nan_check_bool] = ...
         end
     end
     
-    % +++ Better if passing a vector but quick fix:
     nan_check_bool = max(nan_check_bool);
     nan_check_mat = max(max(nan_c_mat, zero_c_mat), inf_c_mat);
 end

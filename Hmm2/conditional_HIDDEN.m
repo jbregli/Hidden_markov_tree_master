@@ -33,7 +33,7 @@ function [hidStates, dob] = conditional_HIDDEN(S, theta, verbose)           % OK
     %% Preparation:
     % Arguments:
     if ~exist('verbose','var')
-        verbose = true;
+        verbose = false;
     end
    
     % Sizes:
