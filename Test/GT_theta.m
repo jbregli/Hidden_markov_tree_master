@@ -97,9 +97,10 @@ function [ theta_gt ] = GT_theta(S, dist_param, epsilon, rn_prob)
             % | (2)H-L  (4)H-H |
             % To access to L-H at layer l and scale j:
             % S{l}.hmm{j}.hidden.epsilon(:,:,sub2ind([n_state,n_state], 1, 2))
-            theta_gt{layer}.epsilon{scale} = ones([s_im, n_state * n_state]);
-            for m=1:(n_state*n_state)
-                theta_gt{layer}.epsilon{scale}(:,:,m) = epsilon(m) .* theta_gt{layer}.epsilon{scale}(:,:,m);
+            theta_gt{layer}.epsilon{scale} = ones([s_im, n_state , n_state]);
+            for m=1:n_state
+                for n=1:n_state
+                    theta_gt{layer}.epsilon{scale}(:,:,m,n) = epsilon(m,n) .* theta_gt{layer}.epsilon{scale}(:,:,m,n);
             end
         end
     end

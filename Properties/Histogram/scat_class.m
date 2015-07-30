@@ -102,11 +102,6 @@ function [ transform ] = scat_class(path_to_set, filt_opt, scat_opt)
                 fprintf([reverseStr, msg]);
                 reverseStr = repmat(sprintf('\b'), 1, length(msg));
                 
-                
-%                 
-%                 fprintf('--- image %i / %i --- expected remaining time: %.4f s. \r ' ,...
-%                         i, path_to_set{2}, (path_to_set{2}-(i-1)) * time)
-                
                 % ST:
                 x = generate_square(true, true, true, false, size_im);
                 [S, U] = scat(x, Wop);

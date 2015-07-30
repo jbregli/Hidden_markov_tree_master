@@ -1,4 +1,4 @@
-function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
+function [ theta, dob] = conditional_EM(set_S, n_step, ...
     n_state, distribution, ...
     eps_uni, verbose, mixing, cv_sens)
 % conditional_EM: PERFORM EXPECTATION/MAXIMISATION ON A SET OF IMAGES.
@@ -99,7 +99,7 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
     
     % Select a random layer and scale in the scattering transform for 
     % plotting: 
-    lay = randi(n_layer);
+    lay = 3; %randi(n_layer);
     scal= randi(n_scale(lay));
 
     % Select a random pixel in the image:    
@@ -204,8 +204,8 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
             step-1)
     end
 
-    % Statistics on the number of converged pixels:
-    cv_stat = hmm_conv_stat(cv_ach_strct);
+    % Compute the number:
+    error_LW = hmm_conv_stat(cv_ach_strct, cv_sens);
     
     % +++ Debuging object:
     dob.set_distrib = set_hidStates;

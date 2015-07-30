@@ -35,7 +35,7 @@ function [hidStates, dob] = conditional_HIDDEN(S, theta, verbose)           % OK
     if ~exist('verbose','var')
         verbose = true;
     end
-
+   
     % Sizes:
     n_layer = length(S);
     n_state = size(theta{1}.proba{1}, 3);

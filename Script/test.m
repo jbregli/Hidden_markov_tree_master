@@ -9,7 +9,7 @@
 %close all
 
 %% Initialization:
-real_data = false;
+real_data = true;
 
 % Size of the simulated images:
 s_im = [10 10];
@@ -18,7 +18,7 @@ n_state = 2;
 % Number of "images" in the set;
 n_image = 50;
 
-%Number of optimization step:
+% Number of optimization step:
 n_step = 100;
 
 % Model distribution:
@@ -28,7 +28,7 @@ eps_uni= false;
 % Display error messages:
 verbose = false;
 % Sensibility f the convergence test:
-cv_sens = 1e-3;
+cv_sens = 1e-6;
 
 %% Creating the proper tree structure:
 % The scattering coefficients are not used yet. 
@@ -59,7 +59,7 @@ S = set_S{1};
 % REAL DATA:
 if real_data
     for im=1:length(set_S)
-        set_S{im} = hmm_prepare_S( set_S{im}, n_state);
+        set_S{im} = hmm_prepare_S(set_S{im}, n_state);
     end
 else
     %% Theta for simultation:
@@ -104,11 +104,10 @@ else
     set_S = GT_set(S, theta_gt, n_image);
 end
 
-% REAL DATA:
-for im=1:length(set_S)
-    set_S{im} = hmm_prepare_S( set_S{im}, n_state);
-end
-
 %% Hmm model:
-[theta, dob] = conditional_EM(set_S, n_step, n_state, distribution, ...
+[theta_est, cv_stat, dob] = conditional_EM(set_S, n_step, n_state, distribution, ...
                               eps_uni, verbose, 10, cv_sens);
+
+if real_data == false
+    error_LW = hmm_error(theta_est, theta_gt);
+end

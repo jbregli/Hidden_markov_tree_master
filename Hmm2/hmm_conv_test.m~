@@ -15,7 +15,9 @@ function [cv_ach_strct, cv_ach_bool] = ...
     if ~exist('init','var')
         init= false;
     end
-        
+    
+    cv_sens
+    
     % Sizes:
     n_layer = length(theta);
     n_scale = zeros(1,n_layer);
@@ -84,7 +86,8 @@ function [cv_ach_strct, cv_ach_bool] = ...
                                 - theta_old{layer}.(fields{i}){scale});
 
                             % Seinsibility comparison at this step:
-                            tmp_cv = tmp_delta < cv_sens; 
+                            tmp_delta(tmp_delta >= cv_sens) = 0;
+                            tmp_delta(tmp_delta < cv_sens) = 1;
                             
 %                             cv_ach_strct{layer}.(fields{i}){scale}(...
 %                                 tmp_delta < cv_sens) = ...
@@ -96,7 +99,7 @@ function [cv_ach_strct, cv_ach_bool] = ...
                             % Cv achieved  over all the states general:
                             if strcmp(fields{i},'epsilon')
                                 % Convergence over all states:
-                                tmp_cv = sum(sum(tmp_cv,4),3);
+                                tmp_cv = sum(sum(tmp_delta,4),3);
                                 tmp_cv(tmp_cv < n_state^2) = 0;
                                 tmp_cv(tmp_cv == n_state^2) = 1;
                                 
@@ -117,7 +120,7 @@ function [cv_ach_strct, cv_ach_bool] = ...
                                 
                             else
                                 % Convergence over all states:
-                                tmp_cv = sum(tmp_cv,3);
+                                tmp_cv = sum(tmp_delta,3);
                                 tmp_cv(tmp_cv < n_state) = 0;
                                 tmp_cv(tmp_cv == n_state) = 1;
                                 
