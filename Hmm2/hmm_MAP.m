@@ -1,29 +1,32 @@
-function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
-% conditional_UP: COMPUTE THE CONDITIONAL UP STEP FOR SHMT.
+function [cond_up, dob] = hmm_MAP(S_inp, theta, verbose)      % OK
+% hmm_MAP: COMPUTE THE MAP OF AN IMAGE.
 %   
 %   See "Statistical inference for Hidden Markov Tree Models and 
 %   application to wavelet trees" for more details on the algorithm.
-%   See algorithm 4 p12.
+%   See algorithm 4 p11 & p14.
+%
+%   The aim of the MAP algorithm is to find the opti;al hidden tree
+%   \hat{h_1}=(\hat{s_1}...\hat{s_n}) maximizing P(H_1=h_1|T_1) and the
+%   value \hat{P} of t he maximum.
 %
 %   --------
 %   INPUTS:
 %   --------
-%   - S: cell(struct)
+%   - S_input: cell(struct)
 %       Structure obtained with the function 'scat' of the 'scatnet' lib.
+%       Input to be classified.
 %   - theta: cell(struct)
-%       Structure with the same organisation as 'S' the 'scatnet' lib.
-%   - hidStates: cell(struct)
-%       Cell of structures containing the distributions for S. Obtained 
-%       with the function distribution_HS.
-%   - verbose: (optional) bool (default= true)
-%       If true then 'hmm_Scheck_sum' displays debugging info.
+%       Structure with the same organisation as 'S' the 'scatnet' lib used
+%       to store the model parameters.
 %
 %   --------
 %   OUTPUTS:
 %   --------
-%   - cond_up: cell(struct)
-%       Cell of structures containing the values of 'Beta' and the 
-%       probabilities of the model.
+%   - P_hat: float
+%       probability of the sequence given the observed data and the model.
+%   - H_tree: cell(struct)
+%       Structure with the same organisation as 'S' the 'scatnet' lib used
+%       to store the optimal states sequence.  
 %   - dob: (optional) struct 
 %       Debuging OBject, place holder to pass along all variable needed for
 %       debugging.
@@ -31,10 +34,7 @@ function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
 %   --------
 %   TODO:
 %   --------
-%   - Add threshold for P_{theta_k}(w_u)} in the arguments (optional maybe)
-%   - Use sanity checks as stopping signals.
-%   - Check for unused fields in the structure 'cond_up' --> how is l used
-%     in the next steps?
+%   - All
 
     %% Preparation:
     % Arguments:
@@ -42,68 +42,67 @@ function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
         verbose = false;
     end
 
-    % Threshold for 'model_proba':
-    mprob_thres = 1e-3;
-    min_thres = NaN; %1e-3;
-    max_thres = NaN; %100;
-
     % Sizes:
-    n_layer = length(S);
+    n_layer = length(S_inp);
     n_state = size(theta{1}.proba{1}, 3);
-    s_image = size(S{1}.signal{1});
+    s_image = size(S_inp{1}.signal{1});
 
     n_scale = zeros(1,n_layer);
 
-    % Structure to store the 'Beta'
-    cond_up = cell(1, n_layer);
+    % Structure to store 'H_tree' and Pvalue (tmp):
+    H_tree = cell(1, n_layer);
+    variable = cell(1, n_layer);
 
     for layer=1:n_layer
-        n_scale(1,layer) = length(S{layer}.signal);
+        n_scale(1,layer) = length(S_inp{layer}.signal);
 
         % Structure:
-        cond_up{layer}.Pvalue = cell(1,n_scale(1,layer));
-        cond_up{layer}.beta.givenNode = cell(1,n_scale(1,layer));
-        cond_up{layer}.beta.givenParent = cell(1,n_scale(1,layer));
-        cond_up{layer}.beta.excludeChild = cell(1,n_scale(1,layer));
-        % Initialization of the matrices:
-        for i=1:n_scale(1,layer)
-            cond_up{layer}.Pvalue{i} = zeros([s_image n_state]);
-            cond_up{layer}.beta.givenNode{i} = zeros([s_image n_state]);
-            cond_up{layer}.beta.givenParent{i} = zeros([s_image n_state]);
-            cond_up{layer}.beta.excludeChild{i} = cell(1,length(S{layer}.hmm{i}.children));
-            for j=1:length(S{layer}.hmm{i}.children)
-                cond_up{layer}.beta.excludeChild{i}{j} = zeros([s_image n_state]);
-            end
-        end
+        H_tree{layer} = cell(1,n_scale(1,layer));
+        variable{layer}.Pvalue = cell(1,n_scale(1,layer));
+        variable{layer}.delta = cell(1,n_scale(1,layer));
+        variable{layer}.gamma = cell(1,n_scale(1,layer));
+
     end
 
-    %% Initialisation:
-    % P_{theta_k}(w_u)}
+    %% Preliminary:
+        % P_{theta_k}(w_u)}
     for layer=n_layer:-1:1
         for scale=1:n_scale(1,layer)
-            cond_up{layer}.Pvalue{scale} = model_proba(S, theta, layer, ...
-                scale, mprob_thres);
+            variable{layer}.Pvalue{scale} = ...
+                model_proba(S_inp, theta, layer, scale);
 
             % +++
-            check_nan = hmm_Scheck_0nan(cond_up{layer}.Pvalue{scale},...
-                'cond_UP_init', 'beta_Pvalue',...
-                layer, scale, verbose);
+            check_nan = hmm_Scheck_0nan(variable{layer}.Pvalue{scale},...
+                'Hmm_MAP', 'P(w_u)', layer, scale, verbose);
             % +++
+            
+            % Delta:
+            % Node
+            % NodeAndParent
+            
+            % Gamma
+            
         end
     end
-
+    
+    %% Initialisation:
     % Loop over the leaves of the tree:
     for layer=n_layer:-1:1
         for scale=1:n_scale(1,layer)
             % A leave has no children:
-            if isempty(S{layer}.hmm{scale}.children)
+            if isempty(S_inp{layer}.hmm{scale}.children)
                 %---------------------------------------------------------%
-                % B_u - Beta givenNode:                     LEAFS         %
-                % B_u(k) = P_{theta_k}(w_u)} P(S_u=k)                     %
+                % D_u - Delta :                             LEAFS         %
+                % D_u(k) = B_u(k)                                         %
+                %        = P_{theta_k}(w_u)} P(S_u=k)                     %
                 %            / sum_{i=1}^{K} (P_{theta_i}(w_u)} P(S_u=i)) %
                 %---------------------------------------------------------%
                 % a) Compute the numerator
                 % b) and the sum for the denominator a:
+                
+                %%%%%%%%%%%%%%%% START FROM HERE (NEED TO DEFINE SOME
+                %%%%%%%%%%%%%%%% VARIABLES)
+                
                 cond_up{layer}.beta.givenNode{scale} = ...
                     cond_up{layer}.Pvalue{scale} ...
                     .* hidStates{layer}.ofHiddenStates{scale};
@@ -129,7 +128,7 @@ function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
                 %---------------------------------------------------------%
                 % Scale and layer of the father node:
                 f_layer = layer-1;
-                f_scale = S{layer}.hmm{scale}.parent;
+                f_scale = S_inp{layer}.hmm{scale}.parent;
 
                 for f_state=1:n_state                                       % ----> OK
                     cond_up{layer}.beta.givenParent{scale}(:,:,f_state) = ...
@@ -177,9 +176,9 @@ function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
     for layer=(n_layer-1):-1:1
         for scale=1:n_scale(1,layer)
             % Make sure this node is not a leaf:
-            if not(isempty(S{layer}.hmm{scale}.children))
+            if not(isempty(S_inp{layer}.hmm{scale}.children))
 
-                n_children = length(S{layer}.hmm{scale}.children);
+                n_children = length(S_inp{layer}.hmm{scale}.children);
 
                 %---------------------------------------------------------%
                 % M_u:                                      NODES         %
@@ -193,7 +192,7 @@ function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
                 for t=1:n_children
                     % Scale and layer of the child node:
                     c_layer = layer + 1;
-                    c_scale = S{layer}.hmm{scale}.children(t);
+                    c_scale = S_inp{layer}.hmm{scale}.children(t);
 
                     % Product over the children for M_u and B_u
                     tmp_prodBeta = tmp_prodBeta .* ...
@@ -240,7 +239,7 @@ function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
                 c_layer = layer + 1;
                 for t=1:n_children
                     % Scale of this child node:
-                    c_scale = S{layer}.hmm{scale}.children(t);
+                    c_scale = S_inp{layer}.hmm{scale}.children(t);
 
                     cond_up{layer}.beta.excludeChild{scale}{t} = ...
                         cond_up{layer}.beta.givenNode{scale} ...
@@ -271,7 +270,7 @@ function [cond_up, dob] = conditional_UP(S, theta, hidStates, verbose)      % OK
                 if layer > 1
                     % Scale and layer of the father node:
                     f_layer = layer-1;
-                    f_scale = S{layer}.hmm{scale}.parent;
+                    f_scale = S_inp{layer}.hmm{scale}.parent;
                     for f_state=1:n_state
                         cond_up{layer}.beta.givenParent{scale}(:,:,f_state) = ...
                             sum(cond_up{layer}.beta.givenNode{scale} ...
