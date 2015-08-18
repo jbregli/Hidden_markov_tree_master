@@ -1,4 +1,4 @@
-function [ transform ] = scat_class(path_to_set, filt_opt, scat_opt)
+function [ transform ] = scat_class(path_to_set, filt_opt, scat_opt, n_image)
 
 % scat_class: COMPUTES THE SCATTERING TRANSFORM OF A BATCH OF SIMILAR
 %             IMAGES
@@ -32,36 +32,44 @@ function [ transform ] = scat_class(path_to_set, filt_opt, scat_opt)
     if nargin < 2
         filt_opt = struct();
     end
-    if nargin< 3
+    if nargin < 3
         scat_opt = struct();
     end
-    
+    if nargin < 4
+        n_image = 0;
+    end
+        
+
     % Display
     reverseStr = '';
     fprintf(' * Image processing: \n')
 
     %% Case where the input is a path:
     if ischar(path_to_set)
-
+        
         % List all the images:
         allFiles = dir(fullfile(path_to_set, '*.png'));
         allNames = {allFiles.name};
-
+        
         % Scattering transform:
         % Initilization w/ first image:
         x = im2double(imread(fullfile(path_to_set, allNames{1})));
         % Pre-compute the WT op that will be applied to the image:
         Wop = wavelet_factory_2d(size(x), filt_opt, scat_opt);
-
+        
         tic;
         S = scat(x, Wop);
         time = toc;
-
+        
         % Stock STs in a cell:
         transform = [{} {S}];
         
         % LOOP OVER THE IMAGES:
-        for i = 2:length(allNames)
+        if n_image ==0
+            n_image = length(allNames);
+        end
+        
+        for i = 2:n_image
             % Print time remaining:
             msg = sprintf('--- Image %i/%i --- Expected remaining time: %.4f s. \r ' ,...
                 i, length(allNames), (length(allNames)-i) * time);
@@ -73,48 +81,64 @@ function [ transform ] = scat_class(path_to_set, filt_opt, scat_opt)
             
             transform = [transform {S}];
         end
-
-    %% Case where the input is a cell:
+        
+        %% Case where the input is a cell:
     elseif iscell(path_to_set)
+        
         if length(path_to_set) < 3
             size_im = [640 640];
         else
             size_im = path_to_set{3};
         end
+        if length(path_to_set) < 4
+            empty = true;
+        else
+            empty = path_to_set{4};
+        end
+        
+        % Generate path_to_set{2} number of square and their ST
+        Wop = wavelet_factory_2d(size_im, filt_opt, scat_opt);
         
         if strcmp(path_to_set{1},'square')
-            % Generate path_to_set{2} number of square and their ST
-            Wop = wavelet_factory_2d(size_im, filt_opt, scat_opt);
-
-            x = generate_square(true, true, true, false, size_im);
-            % empty, noise, translate, rotate, size)
-
-            tic;
-            S = scat(x, Wop);
-            time = toc;
-
-            % Stock STs in a cell:
-            transform = [{} {S}];
-            % GENERATE THE REQUIERED NUMBER OF IMAGES:
-            for i = 2:path_to_set{2}
-                msg = sprintf('--- Image %i/%i --- Expected remaining time: %.4f s. \r ' ,...
-                    i, path_to_set{2}, (path_to_set{2}-(i-1)) * time);
-                fprintf([reverseStr, msg]);
-                reverseStr = repmat(sprintf('\b'), 1, length(msg));
-                
-                % ST:
-                x = generate_square(true, true, true, false, size_im);
-                [S, U] = scat(x, Wop);
-
-                transform = [transform {S}];
-            end
+            x = generate_square(empty, true, true, false, size_im);     % empty, noise, translate, rotate, size)
+        elseif strcmp(path_to_set{1},'circle')
+            x = generate_circle(empty, true, true, size_im);     % empty, noise, translate, size)
         else
             disp('Generator not implemented yet')
+            return
         end
-
+        
+        tic;
+        S = scat(x, Wop);
+        time = toc;
+        
+        % Stock STs in a cell:
+        transform = [{} {S}];
+        % GENERATE THE REQUIERED NUMBER OF IMAGES:
+        for i = 2:path_to_set{2}
+            msg = sprintf('--- Image %i/%i --- Expected remaining time: %.4f s. \r ' ,...
+                i, path_to_set{2}, (path_to_set{2}-(i-1)) * time);
+            fprintf([reverseStr, msg]);
+            reverseStr = repmat(sprintf('\b'), 1, length(msg));
+            
+            % ST:
+            if strcmp(path_to_set{1},'square')
+                x = generate_square(empty, true, false, false, size_im);     % empty, noise, translate, rotate, size)
+            elseif strcmp(path_to_set{1},'circle')
+                x = generate_circle(empty, true, false, false, size_im);     % empty, noise, translate, rotate, size)
+            end
+            
+            [S, U] = scat(x, Wop);
+            
+            transform = [transform {S}];
+        end
+        
     %% Error catching:
     else
         disp('Invalid input')
+        % +++
+        class(path_to_set)
+        transform = [];
     end
     
     

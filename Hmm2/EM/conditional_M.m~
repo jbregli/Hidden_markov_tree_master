@@ -1,5 +1,5 @@
 function [theta, dob] = ...
-    conditional_M(set_S, theta, set_hidStates, set_proba, eps_uni, ...
+    conditional_M(set_S, theta, set_proba, eps_uni, ...
         cv_achieved, theta_old, verbose)
 % conditional_M: COMPUTE THE MAXIMISATION STEP OF THE EXPECTATION
 %                MAXIMISATION ALGORITHM
@@ -15,8 +15,6 @@ function [theta, dob] = ...
 %   - theta: cell(struct)
 %       Structure with the same organisation as 'S' the 'scatnet' lib
 %       containing the modelisation parameters.
-%   - set_hidStates: cell{cell(struct)}
-%       Cell of structures containing the distributions of hidden states.
 %   - set_proba: cell{cell(struct)}
 %       Conditional probabilities
 %   - eps_uni: (optional) bool (default: true)
@@ -60,11 +58,11 @@ cv_lim = 5;
     if ~exist('verbose','var')
         verbose = true;
     end
-
+    
     % Sizes:
     n_layer = length(set_S{1});
     n_state = size(theta{1}.proba{1}, 3);
-    n_image = length(set_hidStates);
+    n_image = length(set_proba);
     s_image = size(set_S{1}{1}.signal{1});
 
     n_scale = zeros(1,n_layer);
@@ -110,7 +108,6 @@ cv_lim = 5;
                 %                           / (K P(s_rho(u)=k)
                 for im=1:n_image
                     % Sum epsilon:                   
-                    % +aaa+++ Test for uniform epsilon
                     if eps_uni
                           tmp_epsilon = tmp_epsilon + ...
                             squeeze(sum(sum(set_proba{im}{layer}.ofNodeAndParent{scale},2),1));                      
@@ -172,15 +169,8 @@ cv_lim = 5;
                 if eps_uni
                     % Case where 'Epsilon' is uniform over a transition:
                     s_eps = [1 1 s_image];
-                    tmp_epsilon = repmat(tmp_epsilon,s_eps);
-                    
-                    % Ignore already converged/bugy updates:
-                    theta{layer}.epsilon{scale} = ...
-                        not(cv_achieved{layer}.epsilon{scale} > cv_lim) ...
-                            .* permute(tmp_epsilon,[3 4 1 2]) ...
-                        + (cv_achieved{layer}.epsilon{scale} > cv_lim) ...
-                            .* theta_old{layer}.epsilon{scale};
-                else
+                    tmp_epsilon = permute(repmat(tmp_epsilon,s_eps),[3 4 1 2]);
+
                     % Ignore already converged/bugy updates:
                     theta{layer}.epsilon{scale} = ...
                         repmat(...

@@ -49,7 +49,6 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
         distribution = 'MixtGauss';
     end
     if ~exist('eps_uni','var')
-        disp('nop')
         eps_uni= true;
     end
     if ~exist('verbose','var')
@@ -116,7 +115,9 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
             % Display and update:
             msg = sprintf('--- Step %i/%i ---', step, n_step);
             fprintf([reverseStr, msg]);
-            reverseStr = repmat(sprintf('\b'), 1, length(msg));
+            if not(verbose)
+                reverseStr = repmat(sprintf('\b'), 1, length(msg));
+            end
         else
             if step ==2
                 time = toc;
@@ -125,9 +126,11 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
             msg = sprintf('--- Step %i/%i --- Maximum expected remaining time: %.2f s. \r ' ,...
                 step, n_step, (n_step-(step-1)) * time);
             fprintf([reverseStr, msg, msg2, msg3, msg4, msg5]);
-            reverseStr = repmat(sprintf('\b'), 1,  ...
-                length(msg) + length(msg2) + length(msg3) + length(msg4)...
-                + length(msg5));
+            if not(verbose)
+                reverseStr = repmat(sprintf('\b'), 1,  ...
+                    length(msg) + length(msg2) + length(msg3) + length(msg4)...
+                    + length(msg5));
+            end
         end
 
         % Old theta for convergence testing:
@@ -136,16 +139,16 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
         end
         
         % Expectation:
+        % Hidden state probabibility:
+        hidStates = conditional_HIDDEN(set_S{1}, theta, verbose);        
         for im=1:n_image
-            % Hidden state probabibility:
-            set_hidStates{im} = conditional_HIDDEN(set_S{im}, theta, verbose);
             % UP pass: Compute the betas
-            cond_up = conditional_UP(set_S{im}, theta, set_hidStates{im}, verbose);
+            cond_up = conditional_UP(set_S{im}, theta, hidStates, verbose);
             % Down pass: Compute the alphas
-            alpha = conditional_DOWN(set_S{im}, theta, set_hidStates{im}, cond_up, verbose);
+            alpha = conditional_DOWN(set_S{im}, theta, hidStates, cond_up, verbose);
             % Conditional probabilities:
             [set_proba{im}, check_strct, s_check] = ...
-                conditional_P(set_S{im}, theta, set_hidStates{im}, ...
+                conditional_P(set_S{im}, theta, hidStates, ...
                 cond_up, alpha, check_strct, cv_ach_strct, verbose);
         end
 
@@ -154,7 +157,7 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
         % 0.
         if max(s_check) == 0
             theta = ...
-                conditional_M(set_S, theta, set_hidStates, set_proba, ...
+                conditional_M(set_S, theta, set_proba, ...
                     eps_uni, cv_ach_strct, theta_old, verbose);
         else
             fprintf('--- Breaking... \n')
@@ -166,8 +169,8 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
             hmm_conv_test(theta, theta_old, cv_ach_strct, step, mixing,...
                 cv_sens); % check_strct);
         
-        % Plot:
-        hmm_plot_distr(set_S, theta, cv_ach_strct, lay, scal, x, y);
+%         % Plot:
+%         hmm_plot_distr(set_S, theta, cv_ach_strct, lay, scal, x, y);
 
         % Display:
         if lay == 1

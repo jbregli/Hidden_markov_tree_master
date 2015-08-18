@@ -54,13 +54,16 @@ function passTest = hmm_Scheck_sum(var_TBC, target, var_fnct, var_name,...
 
     % Test variable
     passTest = true;
+    
+    % Tolerance:
+    tolerance = 1e-14;
 
     %% +++ Sanity check:
     % dim == 3:
     if dim == 3
         sum_var_TBC = squeeze(sum(var_TBC,3));        
         
-        if  any(any(sum_var_TBC - target > 1e-14)) % any(any(sum_var_TBC ~= target))
+        if  any(any(abs(sum_var_TBC - target) > tolerance)) % any(any(sum_var_TBC ~= target))
             % Update test variable
             passTest = false;
 
@@ -79,7 +82,7 @@ function passTest = hmm_Scheck_sum(var_TBC, target, var_fnct, var_name,...
         for f_state=1:n_state
             sum_var_TBC = squeeze(sum(var_TBC(:,:,f_state,:),4));
 
-            if any(any(sum_var_TBC - target(:,:,f_state) > 1e-14))  % any(any(sum_var_TBC ~= target(:,:,f_state)))
+            if any(any(abs(sum_var_TBC - target(:,:,f_state)) > tolerance))  % any(any(sum_var_TBC ~= target(:,:,f_state)))
                 % Update test variable
                 passTest = false;
 
