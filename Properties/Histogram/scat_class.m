@@ -123,9 +123,10 @@ function [ transform ] = scat_class(path_to_set, filt_opt, scat_opt, n_image)
             
             % ST:
             if strcmp(path_to_set{1},'square')
-                x = generate_square(empty, true, false, false, size_im);     % empty, noise, translate, rotate, size)
+                x = generate_square(empty, true, true, false, size_im);     % empty, noise, translate, rotate, size)
             elseif strcmp(path_to_set{1},'circle')
-                x = generate_circle(empty, true, false, false, size_im);     % empty, noise, translate, rotate, size)
+                x = generate_circle(empty, true, true, size_im);     % empty, noise, translate, size)               
+                % empty, noise, translate, rotate, size)
             end
             
             [S, U] = scat(x, Wop);

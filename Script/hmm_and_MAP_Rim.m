@@ -9,15 +9,11 @@ clear all
 close all
 
 %% Initialization:
-% Size of the simulated images:
-s_im = [10 10];
+% Number of states:
 n_state = 2;
 
-% Number of "images" in the set;
-n_image = 100;
-
 % Number of optimization step:
-n_step = 100;
+n_step = 200;
 
 % Model distribution:
 distribution = 'MixtGauss';
@@ -37,8 +33,8 @@ label = 'corduroy/';
 path_to_corduroy = fullfile(directory, label);
 
 % Parameters:
-filt_opt.J = 3; % scales
-filt_opt.L = 3; % orientations
+filt_opt.J = 5; % scales
+filt_opt.L = 6; % orientations
 filt_opt.filter_type = 'morlet';
 scat_opt.oversampling = 2;
 scat_opt.M = 2;
@@ -91,4 +87,4 @@ msg_cord = sprintf('P(corduroy = corduroy) = %.5f \r', ...
 msg_oran = sprintf('P(orange = corduroy) = %.5f \r', ...
     mean(mean(P_hat_oran)));
 
-fprintf(msg_cord, msg_oran)
+fprintf(msg_cord, msg_oran);
