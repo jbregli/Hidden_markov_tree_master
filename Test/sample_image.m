@@ -1,4 +1,4 @@
-function [S] = sample_state(S, theta_gt, layer, scale)
+function [S] = sample_image(S, theta_gt, layer, scale)
 % sample_state: SAMPLE THE IMAGE VALUE OF THE SIMULATED ST.
 %   --------
 %   INPUTS:
