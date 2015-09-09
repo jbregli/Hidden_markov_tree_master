@@ -1,12 +1,11 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
+% This script realizes a classification test of the STHMT on genereted    %
+% trees with known parameters (intial state distrib, transition proba and %
+% gaussian means and variances.                                           %
+% The SCHMT is trained on one set of parameters.                          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% This script realizes a convergence test of the EM algorithm.            %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% We create a simulated probabilistic tree:
-% Initial state distribution:
-
-%clear all
-%close all
+clear all
+close all
 
 %% Initialization:
 % Size of the simulated images:
@@ -17,7 +16,7 @@ n_state = 2;
 n_image = 100;
 
 % Number of optimization step:
-n_step = 100;
+n_step = 200;
 
 % Model distribution:
 distribution = 'MixtGauss';
@@ -132,3 +131,10 @@ test_S_F = create_set_simul(S, theta_gt2, 1);
 
 [P_hat_F, H_tree_F] = hmm_MAP(test_S_F{1}, theta_est, verbose);
 
+msg_T = sprintf('P(M1 = M1) = %.5f \r', ...
+    mean(mean(P_hat_T)));
+msg_F = sprintf('P(M2 = M1) = %.5f \r', ...
+    mean(mean(P_hat_F)));
+
+fprintf(msg_T);
+fprintf(msg_F);

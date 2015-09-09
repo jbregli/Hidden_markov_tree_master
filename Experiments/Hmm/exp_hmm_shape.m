@@ -1,5 +1,7 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% This script realizes a convergence test of the EM algorithm.            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
+% This script realizes a classification test of the STHMT on genereted    %
+% shapes (square and circle).                                             %
+% The SCHMT is trained to model squares.                                  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear all
@@ -16,12 +18,12 @@ n_state = 2;
 n_image = 100;
 
 % Number of optimization step:
-n_step = 100;
+n_step = inf;
 
 % Model distribution:
 distribution = 'MixtGauss';
 % Epsilon uniform over the pixels of a father/son transition
-eps_uni= false;
+eps_uni= true;
 % Display error messages:
 verbose = false;
 % Sensibility f the convergence test:
@@ -34,7 +36,7 @@ cv_sens = 1e-6;
 path_to_set = {'square', n_image, s_im};
 
 % Parameters:
-filt_opt.J = 3; % scales
+filt_opt.J = 4; % scales
 filt_opt.L = 3; % orientations
 filt_opt.filter_type = 'morlet';
 scat_opt.oversampling = 2;
@@ -70,11 +72,11 @@ P_hat_circle = cell(1,n_test);
 % SQUARE:
 % Creating a new square image:
 path_to_square = {'square', n_test, s_im};
-square_S = scat_class(path_to_square, filt_opt, scat_opt);
+square_S = ST_class(path_to_square, filt_opt, scat_opt);
 
 % CIRCLE:
 path_to_circle = {'circle', n_test, s_im};
-circle_S = scat_class(path_to_circle, filt_opt, scat_opt);
+circle_S = ST_class(path_to_circle, filt_opt, scat_opt);
 
 % Prepare the scattering structure for HMM:
 for im=1:n_test
@@ -94,3 +96,5 @@ for im=1:n_test
         score = score + 1/n_test;
     end
 end
+
+fprintf('The recognition score is %.4f. \n', score)

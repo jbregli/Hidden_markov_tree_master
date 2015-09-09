@@ -1,7 +1,8 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
+% This script shows the shift (in)variance in a Scattering Transform 2D.  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all
-% close all
-
-addpath_hmt
+close all
 
 x1 = generate_square(false, false, false);
 x2 = generate_square(false, false, true);

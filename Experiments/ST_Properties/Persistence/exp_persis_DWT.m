@@ -1,3 +1,10 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
+% This script shows the correlation in a Dual Wavelet Tree.               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clear all
+close all
+
+%% Initialization:
 % Create a step-signal:
 %load handel;    % loads the signal into y
 y = generate_edge(false, 2^8);

@@ -1,7 +1,8 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
+% This script shows the shift (in)variance in a Dual Wavelet Tree 2D.     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all
 close all
-
-addpath_hmt
 
 x1 = generate_square(false, false, false);
 x2 = generate_square(false, false, true);

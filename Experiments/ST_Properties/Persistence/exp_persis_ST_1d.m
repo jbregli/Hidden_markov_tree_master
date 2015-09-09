@@ -1,8 +1,10 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
+% This script shows the correlation in a 1D Scattering Transform  .       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all
 close all
 
-addpath_hmt
-
+%% Initialization:
 % Create a step-signal:
 %load handel;    % loads the signal into y
 y = generate_edge(false, 2^8);

@@ -1,10 +1,9 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
+% This script realizes a classification test of the STHMT on the texture  %
+% dataset from KTH (square and circle).                                   %
+% The SCHMT is trained to model one class and is then asked to compare    %
+% to images (1 from the class and the other not.                          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% This script realizes a convergence test of the EM algorithm.            %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% We create a simulated probabilistic tree:
-% Initial state distribution:
-
 clear all
 close all
 
@@ -13,12 +12,12 @@ close all
 n_state = 2;
 
 % Number of optimization step:
-n_step = 200;
+n_step = inf;
 
 % Model distribution:
 distribution = 'MixtGauss';
 % Epsilon uniform over the pixels of a father/son transition
-eps_uni= false;
+eps_uni= true;
 % Display error messages:
 verbose = false;
 % Sensibility f the convergence test:
@@ -33,8 +32,8 @@ label = 'corduroy/';
 path_to_corduroy = fullfile(directory, label);
 
 % Parameters:
-filt_opt.J = 5; % scales
-filt_opt.L = 6; % orientations
+filt_opt.J = 4; % scales
+filt_opt.L = 3; % orientations
 filt_opt.filter_type = 'morlet';
 scat_opt.oversampling = 2;
 scat_opt.M = 2;
@@ -73,7 +72,7 @@ label = 'orange_peel';
 path_to_orange = fullfile(directory, label);
 
 % ST:
-orange_T = scat_class(path_to_orange, filt_opt, scat_opt,1);
+orange_T = ST_class(path_to_orange, filt_opt, scat_opt,1);
 
 % Prepare the scattering structure for HMM:
 for im=1:length(orange_T)
@@ -87,4 +86,5 @@ msg_cord = sprintf('P(corduroy = corduroy) = %.5f \r', ...
 msg_oran = sprintf('P(orange = corduroy) = %.5f \r', ...
     mean(mean(P_hat_oran)));
 
-fprintf(msg_cord, msg_oran);
+fprintf(msg_cord);
+fprintf(msg_oran);

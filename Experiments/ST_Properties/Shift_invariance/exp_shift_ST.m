@@ -1,7 +1,8 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         ERROR
+% This script shows the shift (in)variance in a Scattering Transform.     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all
 close all
-
-addpath_hmt
 
 %% Signal
 % lenght of the signal:
@@ -23,7 +24,6 @@ scat_opt.M = 3;
 magnitude = {};
 
 for i = 1:len
-    i
     % Shifted step:
     y = generate_edge(false, 2^8, i);
     N = length(y);

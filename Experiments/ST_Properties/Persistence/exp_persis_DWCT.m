@@ -1,5 +1,10 @@
-addpath_hmt
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
+% This script shows the correlation in a Dual Wavelet Complex Tree.       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clear all
+close all
 
+%% Initialization:
 % Create a step-signal:
 y = generate_edge(false, 2^8);
 N = length(y);

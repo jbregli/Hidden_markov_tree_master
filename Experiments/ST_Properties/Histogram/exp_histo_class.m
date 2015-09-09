@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
 % This script realizes the scattering transform of several images of a    %
 % same class. Then it plots the histogram of the ST coefficient           %
 % distributions.                                                          %
@@ -33,7 +33,7 @@ scat_opt.M = 3;
 % scat_opt = struct();
 
 % ST:
-set_S = scat_class(path_to_set, filt_opt, scat_opt);
+set_S = ST_class(path_to_set, filt_opt, scat_opt);
 
 %% Display:
-data = plot_ST_histo(set_S, 2, 10, 500);
+data = plot_ST_histo(set_S, layer, index, pixel);

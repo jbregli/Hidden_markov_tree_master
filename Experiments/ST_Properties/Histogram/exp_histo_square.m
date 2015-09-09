@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
 % This script realizes the scattering transform of several images of a    %
 % same class. Then it plots the histogram of the ST coefficient           %
 % distributions.                                                          %
@@ -20,8 +20,8 @@ info = {label, number};
 
 %% Scattering transform:
 % Parameters:
-filt_opt.J = 2; % scales
-filt_opt.L = 2; % orientations
+filt_opt.J = 4; % scales
+filt_opt.L = 4; % orientations
 filt_opt.filter_type = 'morlet';
 scat_opt.oversampling = 2;
 scat_opt.M = 2;

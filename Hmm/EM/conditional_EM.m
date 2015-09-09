@@ -49,7 +49,7 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
         distribution = 'MixtGauss';
     end
     if ~exist('eps_uni','var')
-        eps_uni= true;
+        eps_uni= false;
     end
     if ~exist('verbose','var')
         verbose = false;
@@ -58,7 +58,7 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
         mixing = floor(n_step/10);
     end
     if ~exist('cv_sens','var')
-        cv_sens = 1e-3;
+        cv_sens = 1e-5;
     end    
    
     % Variables (2):
@@ -119,12 +119,18 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
                 reverseStr = repmat(sprintf('\b'), 1, length(msg));
             end
         else
-            if step ==2
+            if step == 2
                 time = toc;
             end
             % Display and update:
-            msg = sprintf('--- Step %i/%i --- Maximum expected remaining time: %.2f s. \r ' ,...
-                step, n_step, (n_step-(step-1)) * time);
+            if n_step == inf
+                msg = sprintf('--- Step %i --- Single step time: %.2f s. \r ' ,...
+                    step, time);
+            else
+                msg = sprintf('--- Step %i/%i --- Maximum expected remaining time: %.2f s. \r ' ,...
+                    step, n_step, (n_step-(step-1)) * time);
+            end
+            
             fprintf([reverseStr, msg, msg2, msg3, msg4, msg5]);
             if not(verbose)
                 reverseStr = repmat(sprintf('\b'), 1,  ...

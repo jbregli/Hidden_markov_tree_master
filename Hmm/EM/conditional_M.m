@@ -173,8 +173,8 @@ cv_lim = 5;
                         [3 4 1 2]);
                 end
                 
-                % Correct the overflowing/rounding error for epsilon:
-                tmp_epsilon = correct_epsilon(tmp_epsilon);
+                % +++ Correct the overflowing/rounding error for epsilon:
+                % tmp_epsilon = correct_epsilon(tmp_epsilon);
                 
                 % Ignore already converged/bugy updates:
                 theta{layer}.epsilon{scale} = ...

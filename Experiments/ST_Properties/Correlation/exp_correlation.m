@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
 % This script first realize the scattering transform of an images.        %
 % Then it computes the correlation between each father node and its       %
 % children and display the interesting information.                       %
@@ -17,10 +17,10 @@ close all
 % x = temp(1168:1808,1677:2317);
 
 % Medium:
-x = generate_circle(false, true); % empty, noise
+% x = generate_circle(false, true); % empty, noise
 
 % Hard:
-% x = uiuc_sample;
+x = uiuc_sample;
 % x = mandrill;
 % x = lena;
 
