@@ -51,17 +51,17 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
 
     % Structure to store 'H_tree' and Pvalue (tmp):
     H_tree = cell(1, n_layer);
-    var = cell(1, n_layer);
+    tmp_Phat = cell(1, n_layer);
 
     for layer=1:n_layer
         n_scale(1,layer) = length(S_inp{layer}.signal);
 
         % Structure:
         H_tree{layer} = cell(1,n_scale(1,layer));
-        var{layer}.Pvalue = cell(1,n_scale(1,layer));
-        var{layer}.delta.node = cell(1,n_scale(1,layer));
-        var{layer}.delta.nodeAndParents = cell(1,n_scale(1,layer));
-        var{layer}.gamma = cell(1,n_scale(1,layer));
+        tmp_Phat{layer}.Pvalue = cell(1,n_scale(1,layer));
+        tmp_Phat{layer}.delta.node = cell(1,n_scale(1,layer));
+        tmp_Phat{layer}.delta.nodeAndParents = cell(1,n_scale(1,layer));
+        tmp_Phat{layer}.gamma = cell(1,n_scale(1,layer));
 
     end
 
@@ -79,7 +79,7 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
                 % D_u(k):                                        LEAF         %
                 % D_u(k) = B_u(k)                                             %
                 %-------------------------------------------------------------%
-                var{layer}.delta.node{scale} = ...
+                tmp_Phat{layer}.delta.node{scale} = ...
                     cond_up{layer}.beta.givenNode{scale};
 
                 %-------------------------------------------------------------%
@@ -91,8 +91,8 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
                 % G_u(j) = argmax_{i \in states}(D_u(i)eps(j,i)/P(S_u=i))     %
                 %-------------------------------------------------------------%
                 % Initialize gamma at 1 and Delta_nodeAndParents at 0:
-                var{layer}.gamma{scale} = ones(s_image);
-                var{layer}.delta.nodeAndParents{scale} = zeros([s_image n_state]);
+                tmp_Phat{layer}.gamma{scale} = ones(s_image);
+                tmp_Phat{layer}.delta.nodeAndParents{scale} = zeros([s_image n_state]);
                 
                 % Maximum over states:
                 for f_state=1:n_state
@@ -101,7 +101,7 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
                     f_scale = S_inp{layer}.hmm{scale}.parent;
 
                     % Maximum over child's states:
-                    tmp_prod =  var{layer}.delta.node{scale} ...
+                    tmp_prod =  tmp_Phat{layer}.delta.node{scale} ...
                         .* squeeze(theta{layer}.epsilon{scale}(:,:,f_state,:)) ...
                         ./ hidStates{layer}.ofHiddenStates{scale};
 
@@ -110,12 +110,12 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
                         tmp_max = bsxfun(@max,tmp_max,tmp_prod(:,:,c_state));
 
                         % Update argmax:
-                        var{layer}.gamma{scale}(...
+                        tmp_Phat{layer}.gamma{scale}(...
                             tmp_max == tmp_prod(:,:,c_state)) = c_state;
                     end
 
                     % D_{u,\rho(u)}(j):
-                     var{layer}.delta.nodeAndParents{scale}(:,:,f_state) = ...
+                     tmp_Phat{layer}.delta.nodeAndParents{scale}(:,:,f_state) = ...
                         tmp_max ...
                         .* hidStates{f_layer}.ofHiddenStates{f_scale}(:,:,f_state);    
                 end
@@ -150,10 +150,10 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
 
                     % Product over the children for D_u:
                     tmp_prodDelta = tmp_prodDelta .* ...
-                        var{c_layer}.delta.nodeAndParents{c_scale};
+                        tmp_Phat{c_layer}.delta.nodeAndParents{c_scale};
                 end
 
-                var{layer}.delta.node{scale} = ...
+                tmp_Phat{layer}.delta.node{scale} = ...
                         cond_up{layer}.Pvalue{scale} .* tmp_prodDelta ...
                         ./ (hidStates{layer}.ofHiddenStates{scale} ...
                         .^ (n_children-1) ...
@@ -162,8 +162,8 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
                 % +++ SANITY CHECKS:
                 % sum:
                 check_sum = ...
-                    hmm_Scheck_sum(var{layer}.delta.node{scale}, ...
-                    ones(size(sum(var{layer}.delta.node{scale},3))),...
+                    hmm_Scheck_sum(tmp_Phat{layer}.delta.node{scale}, ...
+                    ones(size(sum(tmp_Phat{layer}.delta.node{scale},3))),...
                     'MAP', 'delta_givenNode', '[1]', layer, scale, verbose);
                 % +++
 
@@ -176,8 +176,8 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
                 % G_u(j) = argmax_{i \in states}(D_u(i)eps(j,i)/P(S_u=i)) %
                 %---------------------------------------------------------%
                 % Initialize gamma at 1 and Delta_nodeAndParents at 0:
-                var{layer}.gamma{scale} = ones(s_image);
-                var{layer}.delta.nodeAndParents{scale} = zeros([s_image n_state]);
+                tmp_Phat{layer}.gamma{scale} = ones(s_image);
+                tmp_Phat{layer}.delta.nodeAndParents{scale} = zeros([s_image n_state]);
                 
                 % Maximum over states:
                 for f_state=1:n_state
@@ -186,7 +186,7 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
                     f_scale = S_inp{layer}.hmm{scale}.parent;
                     
                     % Maximum over child's states:
-                    tmp_prod =  var{layer}.delta.node{scale} ...
+                    tmp_prod =  tmp_Phat{layer}.delta.node{scale} ...
                         .* squeeze(theta{layer}.epsilon{scale}(:,:,f_state,:)) ...
                         ./ hidStates{layer}.ofHiddenStates{scale};
                     
@@ -195,13 +195,13 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
                         tmp_max = bsxfun(@max,tmp_max,tmp_prod(:,:,c_state));
                         
                         % Update argmax:
-                        var{layer}.gamma{scale}(...
+                        tmp_Phat{layer}.gamma{scale}(...
                             tmp_max == tmp_prod(:,:,c_state)) = c_state;
                     end
                     
                     % D_{u,\rho(u)}(j):
                     if layer > 1
-                         var{layer}.delta.nodeAndParents{scale}(:,:,f_state) = ...
+                         tmp_Phat{layer}.delta.nodeAndParents{scale}(:,:,f_state) = ...
                             tmp_max ...
                             .* hidStates{f_layer}.ofHiddenStates{f_scale}(:,:,f_state);    
                     end
@@ -209,8 +209,8 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
                 
                 % +++ SANITY CHECKS:
                 % sum:
-                check_sum = hmm_Scheck_sum(var{layer}.delta.nodeAndParents{scale}, ...
-                    ones(size(sum(var{layer}.delta.nodeAndParents{scale},3))),...
+                check_sum = hmm_Scheck_sum(tmp_Phat{layer}.delta.nodeAndParents{scale}, ...
+                    ones(size(sum(tmp_Phat{layer}.delta.nodeAndParents{scale},3))),...
                     'MAP', 'delta_givenParent', '[1]', layer, scale, verbose);
                 % +++
             end
@@ -220,14 +220,17 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
     %% Termination:
     % \hat(P) = max(P(H_1|T_1))
     % \hat(P) = max_{i \in states}(D_u(i))
-    P_hat = var{1}.delta.node{1}(:,:,1);
+    P_hat = tmp_Phat{1}.delta.node{1}(:,:,1);
     H_tree{1}{1} = ones(s_image);
     
     for state=2:n_state
-        P_hat = bsxfun(@max, P_hat, var{1}.delta.node{1}(:,:,state));
+        P_hat = bsxfun(@max, P_hat, tmp_Phat{1}.delta.node{1}(:,:,state));
+        
+        % +++ Correct of Nan values:
+        P_hat(isnan(P_hat)) = 0;
         
         % Update argmax:
-        H_tree{1}{1}(P_hat == var{1}.delta.node{1}(:,:,state)) = state;
+        H_tree{1}{1}(P_hat == tmp_Phat{1}.delta.node{1}(:,:,state)) = state;
     end   
     
     %% Downward tracking:
@@ -240,8 +243,11 @@ function [P_hat, H_tree, dob] = hmm_MAP(S_inp, theta, verbose)
             
             % Optimal state:
             H_tree{layer}{scale} = ...
-                var{layer}.gamma{scale}(H_tree{f_layer}{f_scale});
+                tmp_Phat{layer}.gamma{scale}(H_tree{f_layer}{f_scale});
         end
     end
+    
+    
+    
 end
 

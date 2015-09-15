@@ -167,9 +167,18 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, n_step, ...
                     eps_uni, cv_ach_strct, theta_old, verbose);
         else
             fprintf('--- Breaking... \n')
+      
             break
         end
-
+        
+        % Ceck theta values:
+        check_bool = hmm_check_theta(theta);
+        if check_bool
+            fprintf('--- Breaking - theta test... \n')
+            theta = theta_old;
+            break
+        end
+        
         % Convergence testing:
         [cv_ach_strct, cv_ach_bool] = ...
             hmm_conv_test(theta, theta_old, cv_ach_strct, step, mixing,...

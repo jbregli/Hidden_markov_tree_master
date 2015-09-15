@@ -37,8 +37,8 @@ function [ image ] = generate_circle(empty, noise, translate, size)
 
     % Translate:
     if translate == true
-        xmax = max(size(1)/10, 5);
-        ymax = max(size(2)/10, 5);
+        xmax = max(floor(size(1)/10), 5);
+        ymax = max(floor(size(2)/10), 5);
         xTrans = randi([-xmax,xmax]);
         yTrans = randi([-ymax, ymax]);
         image =  circshift(image,[xTrans, yTrans]);
