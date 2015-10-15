@@ -54,7 +54,7 @@ end
 
 
 %% CLASS 1 - CIRCLE - TRAINING: 
-label_seabed = 'Mix'; 
+label_seabed = 'Seabed'; 
 path_to_training_seabed = fullfile(dir_training, label_seabed);
 
 fprintf('------ TRAINING SEABED ------ \n')
@@ -121,17 +121,17 @@ for im=1:n_test
     P_hat_se_se{im} = mean(mean(tmp_P_hat_se_se));
 
     % +++
-    sum_P_ri = sum_P_ri + P_hat_ri_ri{im};
-    sum_P_se = sum_P_se + P_hat_se_se{im};
+    sum_P_ri = sum_P_ri + (P_hat_ri_ri{im} + P_hat_se_ri)/(2 * n_test);
+    sum_P_se = sum_P_se + (P_hat_se_se{im} + P_hat_ri_se)/(2 * n_test);
 end
 
 for im=1:n_test
     % +++
-%     P_hat_ri_ri{im} = (P_hat_ri_ri{im} * n_test) / sum_P_ri;
-%     P_hat_ri_se{im} = (P_hat_ri_se{im} * n_test) / sum_P_se;
-%     
-%     P_hat_se_se{im} = (P_hat_se_se{im} * n_test) / sum_P_se;
-%     P_hat_se_ri{im} = (P_hat_se_ri{im} * n_test) / sum_P_ri;    
+    P_hat_ri_ri{im} = P_hat_ri_ri{im} / sum_P_ri;
+    P_hat_ri_se{im} = P_hat_ri_se{im} / sum_P_se;
+    
+    P_hat_se_se{im} = P_hat_se_se{im} / sum_P_se;
+    P_hat_se_ri{im} = P_hat_se_ri{im} / sum_P_ri;    
     %+++
     
     if P_hat_ri_ri{im} > P_hat_ri_se{im}

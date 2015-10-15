@@ -31,7 +31,7 @@ cv_sens = 1e-6;
 
 % Parameters:
 filt_opt.J = 3; % scales
-filt_opt.L = 3; % orientations
+filt_opt.L = 6; % orientations
 filt_opt.filter_type = 'morlet';
 scat_opt.oversampling = 2;
 scat_opt.M = 2;

@@ -15,7 +15,7 @@ s_im = [32 32];
 n_state = 2;
 
 % Number of "images" in the training set;
-n_image = 50;
+n_image = 300;
 
 % Number of optimization step:
 n_step = 100;
@@ -28,9 +28,9 @@ distribution = 'MixtGauss';
 % Epsilon uniform over the pixels of a father/son transition
 eps_uni= false;
 % Display error messages:
-verbose = true;
+verbose = false;
 % Sensibility f the convergence test:
-cv_sens = 1e-6;
+cv_sens = 1e-5;
 
 %% CLASS 1 - SQUARE - TRAINING: 
 path_to_square = {'square', n_image, s_im};
@@ -55,7 +55,6 @@ end
 [theta_est_square, cv_stat_square, dob_square] = ...
     conditional_EM(set_S_square, n_step, n_state, distribution, ...
         eps_uni, verbose, mixing, cv_sens);
-
 
 %% CLASS 1 - CIRCLE - TRAINING: 
 path_to_circle = {'circle', n_image, s_im};
