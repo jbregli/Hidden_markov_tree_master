@@ -37,10 +37,10 @@ path_to_square = {'square', n_image, s_im};
 fprintf('------ TRAINING SQUARE ------ \n')
 
 % Parameters:
-filt_opt.J = 3; % scales
+filt_opt.J = 5; % scales
 filt_opt.L = 3; % orientations
 filt_opt.filter_type = 'morlet';
-scat_opt.oversampling = 2;
+scat_opt.oversampling = 4;
 scat_opt.M = 2;
 
 % ST:

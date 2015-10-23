@@ -49,36 +49,43 @@ function [ set_S ] = scat_class(path_to_set, filt_opt, scat_opt, n_image)
         % List all the images:
         allFiles = dir(fullfile(path_to_set, '*.png'));
         allNames = {allFiles.name};
-        
-        % Scattering transform:
-        % Initilization w/ first image:
-        x = im2double(imread(fullfile(path_to_set, allNames{1})));
-        % Pre-compute the WT op that will be applied to the image:
-        Wop = wavelet_factory_2d(size(x), filt_opt, scat_opt);
-        
-        tic;
-        S = scat(x, Wop);
-        time = toc;
-        
-        % Stock STs in a cell:
-        set_S = [{} {S}];
-        
-        % LOOP OVER THE IMAGES:
-        if n_image ==0
+
+        if n_image == 0 || n_image > length(allNames)
             n_image = length(allNames);
         end
         
-        for i = 2:n_image
-            % Print time remaining:
-            msg = sprintf('--- Image %i/%i --- Expected remaining time: %.4f s. \r ' ,...
-                i, length(allNames), (length(allNames)-i) * time);
-            fprintf([reverseStr, msg]);
-            reverseStr = repmat(sprintf('\b'), 1, length(msg));
-            
-            % ST:
-            [S, U] = scat(im2double(imread(fullfile(path_to_set, allNames{i}))), Wop);
-            
-            set_S = [set_S {S}];
+        % Create a random sampler:
+        rdm_spl = randsample(1:length(allNames), n_image);
+        
+        % LOOP OVER THE IMAGES:
+        for i=1:n_image
+            if i==1              
+                % Initilization w/ first image:
+                x = im2double(imread(fullfile(path_to_set, ...
+                    allNames{rdm_spl(i)})));
+                               
+                % Pre-compute the WT op that will be applied to the image:
+                Wop = wavelet_factory_2d(size(x), filt_opt, scat_opt);
+        
+                tic;
+                S = scat(x, Wop);
+                time = toc;
+
+                % Stock STs in a cell:
+                set_S = [{} {S}];       
+            else
+                % Print time remaining:
+                msg = sprintf('--- Image %i/%i --- Expected remaining time: %.4f s. \r ' ,...
+                    i, n_image, (n_image-i) * time);
+                fprintf([reverseStr, msg]);
+                reverseStr = repmat(sprintf('\b'), 1, length(msg));
+
+                % ST:
+                S = scat(im2double(imread(fullfile(path_to_set, ...
+                    allNames{rdm_spl(i)}))), Wop);
+
+                set_S = [set_S {S}];
+            end
         end
         
         %% Case where the input is a cell:

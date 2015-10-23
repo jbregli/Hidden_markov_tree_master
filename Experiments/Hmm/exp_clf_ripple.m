@@ -2,12 +2,19 @@
 % This script realizes a classification test of the STHMT on genereted    %
 % cropped sonar images from MUSSEL AREA C dataset.                        %
 % The SCHMT is trained to model squares.                                  %
+%                                                                         %
+% BEST PARAMETER SO FAR: CS=0.8                                           %
+% n_image = 0; n_state = 2; n_step = 100; eps_uni= false; cv_sens = 1e-5; %
+% filt_opt.J = 5; filt_opt.L = 3; filt_opt.filter_type = 'morlet';        %
+% scat_opt.oversampling = 2; scat_opt.M = 2;                              %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear all
 close all
 
 %% Initialization:
+n_image = 200; % 0 for all the images
+
 % Number of states:
 n_state = 2;
 
@@ -27,7 +34,7 @@ cv_sens = 1e-5;
 dir_training = '/home/jeanbaptiste/Datasets/Sonar/Area_C_crops/Training/';
 
 % ST Parameters:
-filt_opt.J = 3; % scales
+filt_opt.J = 5; % scales
 filt_opt.L = 3; % orientations
 filt_opt.filter_type = 'morlet';
 scat_opt.oversampling = 2;
@@ -40,7 +47,7 @@ path_to_training_ripple = fullfile(dir_training, label_ripple);
 fprintf('------ TRAINING RIPPLE ------ \n')
 
 % ST:
-set_S_ripple = ST_class(path_to_training_ripple, filt_opt, scat_opt);
+set_S_ripple = ST_class(path_to_training_ripple, filt_opt, scat_opt, n_image);
 
 % Prepare the scattering structure for HMM:
 for im=1:length(set_S_ripple)
@@ -52,15 +59,16 @@ end
     conditional_EM(set_S_ripple, n_step, n_state, distribution, ...
         eps_uni, verbose, 10, cv_sens);
 
+clear set_S_ripple
 
-%% CLASS 1 - CIRCLE - TRAINING: 
+%% CLASS 2 - Mix - TRAINING: 
 label_seabed = 'Mix'; 
 path_to_training_seabed = fullfile(dir_training, label_seabed);
 
 fprintf('------ TRAINING SEABED ------ \n')
 
 % ST:
-set_S_seabed = ST_class(path_to_training_seabed, filt_opt, scat_opt);
+set_S_seabed = ST_class(path_to_training_seabed, filt_opt, scat_opt, n_image);
 
 % Prepare the scattering structure for HMM:
 for im=1:length(set_S_seabed)
@@ -72,6 +80,8 @@ end
     conditional_EM(set_S_seabed, n_step, n_state, distribution, ...
         eps_uni, verbose, 10, cv_sens);                          
 
+clear set_S_seabed
+    
 %% MAP - CLASSIFICATION SCORE:
 fprintf('------ TESTING ------ \n')
 n_test = 40;
@@ -86,10 +96,10 @@ P_hat_se_se = cell(1,n_test);
 dir_test = '/home/jeanbaptiste/Datasets/Sonar/Area_C_crops/Test/';
 
 path_to_test_ripple = fullfile(dir_test, label_ripple);
-S_ripple_test = ST_class(path_to_test_ripple, filt_opt, scat_opt);
+S_ripple_test = ST_class(path_to_test_ripple, filt_opt, scat_opt, n_test);
 
 path_to_test_seabed = fullfile(dir_test, label_seabed);
-S_seabed_test = ST_class(path_to_test_seabed, filt_opt, scat_opt);
+S_seabed_test = ST_class(path_to_test_seabed, filt_opt, scat_opt, n_test);
 
 % +++ Mean P for normalization:
 sum_P_ri = 0;
@@ -120,9 +130,9 @@ for im=1:n_test
     P_hat_se_ri{im} = mean(mean(tmp_P_hat_se_ri));
     P_hat_se_se{im} = mean(mean(tmp_P_hat_se_se));
 
-    % +++
-    sum_P_ri = sum_P_ri + P_hat_ri_ri{im};
-    sum_P_se = sum_P_se + P_hat_se_se{im};
+%     % +++
+%     sum_P_ri = sum_P_ri + P_hat_ri_ri{im};
+%     sum_P_se = sum_P_se + P_hat_se_se{im};
 end
 
 for im=1:n_test
