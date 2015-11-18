@@ -81,6 +81,13 @@ function [check_bool] = hmm_check_theta(theta)
                     if max(max(max(max(nan_c_mat)))) ...
                             || max(max(max(max(inf_c_mat)))) == 1
                         % Update test variable
+                        fprintf('+++ check theta: Faulty field: %s at layer %i and scale %i \n',...
+                            field{i}, layer, scale)
+                        fprintf('+++ check theta: nan_c_mat= %i \n', ...
+                            max(max(max(max(nan_c_mat)))))
+                        fprintf('+++ check theta: inf_c_mat= %i \n',...
+                            max(max(max(max(inf_c_mat)))))
+
                         check_bool = true;
                         return
                     end

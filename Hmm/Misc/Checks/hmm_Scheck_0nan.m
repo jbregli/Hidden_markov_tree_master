@@ -34,9 +34,10 @@ function [nan_check_mat, nan_check_bool] = ...
 %   --------
 %   OUTPUTS:
 %   --------
-%   - passTest: list(bool) (length changing depending on tests performed)
-%       Did 'var_TBC' pass the test.
-%       passTest(1) = nan, passTest(2) = 0, passTest(3) = infty, 
+%   - nan_check_mat: Multidimensional Arrays (d=2)
+%       Binary matrix of size [s_im]. 1 means that the pixel is buguy.
+%   - nan_check_bool: bool
+%       Is there a buguy pixel on this matrix.
 %
 %   --------
 %   ISSUES:
@@ -45,9 +46,7 @@ function [nan_check_mat, nan_check_bool] = ...
 %   --------
 %   TODO:
 %   --------
-%   - Return a vector of test (?)
-%   - Add a masking option based on the convergence status of each pixel.
-
+%
     %% Preparation:
     % Arguments:
     if ~exist('verbose','var')
@@ -69,10 +68,6 @@ function [nan_check_mat, nan_check_bool] = ...
     % Test variable
     nan_check_bool = false * zeros(1,nan + zero + infty);
     
-%     % Resize cv_test if necessary:
-%     if length(size(cv_test)) ~= length(size(var_TBC))
-%         cv_test = repmat(cv_test,1,1,1,size(cv_test,3));
-%     end
     
     %% +++ Sanity check:
     if nan

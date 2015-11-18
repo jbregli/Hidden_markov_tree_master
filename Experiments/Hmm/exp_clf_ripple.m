@@ -13,7 +13,7 @@ clear all
 close all
 
 %% Initialization:
-n_image = 200; % 0 for all the images
+n_image = 100; % 0 for all the images
 
 % Number of states:
 n_state = 2;
@@ -31,14 +31,16 @@ verbose = false;
 cv_sens = 1e-5;
 
 % Data path:
-dir_training = '/home/jeanbaptiste/Datasets/Sonar/Area_C_crops/Training/';
+format = 'mat';
+%dir_training = '/home/jeanbaptiste/Datasets/Sonar/Area_C_crops/Training/';
+dir_training = '/home/jeanbaptiste/Datasets/Sonar/Area_C_crops2/Training/';
 
 % ST Parameters:
 filt_opt.J = 5; % scales
 filt_opt.L = 3; % orientations
 filt_opt.filter_type = 'morlet';
 scat_opt.oversampling = 2;
-scat_opt.M = 2;
+scat_opt.M = 3;
 
 %% CLASS 1 - RIPPLE - TRAINING: 
 label_ripple = 'Ripple/'; 
@@ -47,7 +49,7 @@ path_to_training_ripple = fullfile(dir_training, label_ripple);
 fprintf('------ TRAINING RIPPLE ------ \n')
 
 % ST:
-set_S_ripple = ST_class(path_to_training_ripple, filt_opt, scat_opt, n_image);
+set_S_ripple = ST_class(path_to_training_ripple, filt_opt, scat_opt, n_image, format);
 
 % Prepare the scattering structure for HMM:
 for im=1:length(set_S_ripple)
@@ -62,13 +64,13 @@ end
 clear set_S_ripple
 
 %% CLASS 2 - Mix - TRAINING: 
-label_seabed = 'Mix'; 
+label_seabed = 'Seabed'; 
 path_to_training_seabed = fullfile(dir_training, label_seabed);
 
 fprintf('------ TRAINING SEABED ------ \n')
 
 % ST:
-set_S_seabed = ST_class(path_to_training_seabed, filt_opt, scat_opt, n_image);
+set_S_seabed = ST_class(path_to_training_seabed, filt_opt, scat_opt, n_image, format);
 
 % Prepare the scattering structure for HMM:
 for im=1:length(set_S_seabed)
@@ -93,13 +95,15 @@ P_hat_ri_se = cell(1,n_test);
 P_hat_se_ri = cell(1,n_test);
 P_hat_se_se = cell(1,n_test);
 
-dir_test = '/home/jeanbaptiste/Datasets/Sonar/Area_C_crops/Test/';
+%dir_test = '/home/jeanbaptiste/Datasets/Sonar/Area_C_crops/Test/';
+dir_test = '/home/jeanbaptiste/Datasets/Sonar/Area_C_crops2/Test/';
 
 path_to_test_ripple = fullfile(dir_test, label_ripple);
-S_ripple_test = ST_class(path_to_test_ripple, filt_opt, scat_opt, n_test);
+S_ripple_test = ST_class(path_to_test_ripple, filt_opt, scat_opt, n_test, format);
 
 path_to_test_seabed = fullfile(dir_test, label_seabed);
-S_seabed_test = ST_class(path_to_test_seabed, filt_opt, scat_opt, n_test);
+%S_seabed_test = ST_class(path_to_test_seabed, filt_opt, scat_opt, n_test, format);
+S_seabed_test = ST_class(path_to_test_seabed, filt_opt, scat_opt, n_test, format);
 
 % +++ Mean P for normalization:
 sum_P_ri = 0;

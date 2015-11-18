@@ -30,7 +30,7 @@ function [corr_strct] = correlation_fc_allNet(S, sct_plot, verbose)
     
     
     %% Loop over the network
-    for f_layer=1:(length(S)-1)
+    for f_layer=3:(length(S)-1)
         % Loop over the nodes of a layer
         for f_index=1:length(S{f_layer}.signal)
             % Call 'correlation_fc (no plots)         

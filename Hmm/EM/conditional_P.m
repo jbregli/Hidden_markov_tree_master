@@ -1,6 +1,6 @@
 function [proba, check_strct, s_check, dob] = ...
     conditional_P(S, theta, hidStates, cond_up, alpha, check_strct, ...
-        cv_strct, verbose)
+        verbose)
 % conditional_P: COMPUTE THE CONDITIONAL PROBABILITIES FOR SHMT.
 %
 %   See "Statistical inference for Hidden Markov Tree Models and
@@ -30,6 +30,9 @@ function [proba, check_strct, s_check, dob] = ...
 %   --------
 %   - proba: cell(struct)
 %       Conditional probabilities
+%   - check_strct: cell(struct)
+%       Of the same architecture as the conditional probabilities. 1 if the
+%       value of the CDP is not correct.
 %   - s_check: (optional) bool
 %       Have the conditional probabilities passed the test?
 %   - dob: (optional) struct
@@ -101,8 +104,8 @@ function [proba, check_strct, s_check, dob] = ...
                 % Find the children 'scale' in the child list:
                 [~,loc] = ismember(scale,S{f_layer}.hmm{f_scale}.children);
 
-                for f_state=1:n_state                                                   % WARNING: THE FACTOR 2 HERE HAS BEEN ADDED FROM THE CORRECT FORMULA
-                    for c_state=1:n_state                                               % IT IS A QUICK PATCH NOT PROVEN YET
+                for f_state=1:n_state                                                   
+                    for c_state=1:n_state                                               
                         proba{layer}.ofNodeAndParent{scale}(:,:,f_state,c_state) = ...              % P(s_{rho(u)}= i, s_u=k |w) =
                             cond_up{layer}.beta.givenNode{scale}(:,:,c_state) ...                   % B_{u}(k)
                             ./ hidStates{layer}.ofHiddenStates{scale}(:,:,c_state) ...              % / P(S_u = k))
@@ -113,26 +116,10 @@ function [proba, check_strct, s_check, dob] = ...
                     end
                 end
 
-                %               NOT WORKING
-                %                 test_ONP = ...
-                %                     repmat(...
-                %                     cond_up{layer}.beta.givenNode{scale} ...                    % B_{u}(i)
-                %                     ./ hidStates{layer}.ofHiddenStates{scale} ...               % / P(S_u = k))
-                %                     .* cond_up{f_layer}.beta.excludeChild{f_scale}{loc} ...     % B_{rho(u)\u}(i)
-                %                     .* alpha{f_layer}{f_scale} ...                              % a_{rho(u)(i)
-                %                     .* hidStates{f_layer}.ofHiddenStates{f_scale}, ...          % P(S_{rho(u)} = i)
-                %                     1,1,1,n_state) ...
-                %                     .* theta{layer}.epsilon{scale};                                 % eps_{u,rho(u)(i,k)
-                %
-                %                 if test_ONP ~= proba{layer}.ofNodeAndParent{scale}
-                %                     disp('fail')
-                %                 else
-                %                     disp('yattaaa?')
-                %                 end
-
                 % +++ SANITY CHECKS:
                 % 0 or Nan: NOT YET INCLUDE IN 'check_stct' BECAUSE OF DIM
-                hmm_Scheck_0nan(proba{layer}.ofNodeAndParent{scale},...
+                [check_strct{layer}.ofNodeAndParents{scale}, tmp_bool] = ...
+                    hmm_Scheck_0nan(proba{layer}.ofNodeAndParent{scale},...
                     'cond_P', 'proba_of_node_and_parents',...
                     layer, scale, verbose);
                 % Sum:
@@ -143,13 +130,13 @@ function [proba, check_strct, s_check, dob] = ...
             end
                        
             % +++
-            [tmp_strct, tmp_bool] = ...
+            [check_strct{layer}.ofNode{scale}, tmp_bool] = ...
                 hmm_Scheck_0nan(proba{layer}.ofNode{scale}, 'cond_P', ...
                     'proba_of_node', layer, scale, verbose);
             
-            % Update check_strct:
-            check_strct{layer}{scale} = max(check_strct{layer}{scale}, ...
-                   tmp_strct);
+%             % Update check_strct:
+%             check_strct{layer}{scale} = max(check_strct{layer}{scale}, ...
+%                    tmp_strct);
                
             % Update s_check:
             s_check = max(s_check, tmp_bool);

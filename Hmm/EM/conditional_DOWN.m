@@ -86,14 +86,29 @@ function [alpha, dob] = conditional_DOWN(S, theta, hidStates, cond_up, ...
             alpha{layer}{scale} = ...
                 squeeze(sum(...
                 repmat(...
-                alpha{f_layer}{f_scale} ...                                   % a_{rho(u)(i)
+                alpha{f_layer}{f_scale} ...                                 % a_{rho(u)(i)
                 .* cond_up{f_layer}.beta.excludeChild{f_scale}{loc} ... 	% eps_{u,rho(u)(i,k)
                 .* hidStates{f_layer}.ofHiddenStates{f_scale}, ...          % B_{rho(u)\u}(i)
                 1,1,1,n_state) ...
-                .* theta{layer}.epsilon{scale}, ...                             % P(S_{rho(u)} = i)
+                .* theta{layer}.epsilon{scale}, ...                         % P(S_{rho(u)} = i)
                 3)) ...
-                ./ hidStates{layer}.ofHiddenStates{scale};                      % / P(S_u = k))
+                ./ hidStates{layer}.ofHiddenStates{scale};                  % / P(S_u = k))
 
+            % SIMILAR FORMULA FROM OTHER DURAND ARTICLE:
+%             for c_state=1:n_state
+%                 tmp_sum_alpha = zeros(s_image);
+%                 for f_state=1:n_state
+%                     tmp_sum_alpha = tmp_sum_alpha + ...
+%                         theta{layer}.epsilon{scale}(:,:,f_state,c_state)...         % eps_{u,rho(u)(i,k)
+%                         .* cond_up{f_layer}.beta.givenNode{f_scale}(:,:,f_state)... % .* B_{rho(u)}(i)
+%                         .* alpha{f_layer}{f_scale}(:,:,f_state)...                  % .* a_{rho(u)(i)
+%                         ./ cond_up{layer}.beta.givenParent{scale}(:,:,f_state);     % ./ B_{rho(u),u}(i)  
+%                 end
+%                 alpha{layer}{scale}(:,:,c_state)= tmp_sum_alpha...
+%                     ./ hidStates{layer}.ofHiddenStates{scale}(:,:,c_state);         % ./ P(S_u = k))
+%             end
+            
+            
             % +++ SANITY CHECKS:
             % nan
             check_nan = hmm_Scheck_0nan(alpha{layer}{scale},...

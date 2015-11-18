@@ -8,18 +8,32 @@
 % filt_opt.J = 5; filt_opt.L = 3; filt_opt.filter_type = 'morlet';        %
 % scat_opt.oversampling = 2; scat_opt.M = 2;                              %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 clear all
 close all
 
-% Initialization:
-n_image = 0; % 0 for all the images
+%% === load data -------------------------------------------------------
+dname = '/home/jeanbaptiste/Datasets/Sonar/UDRC_datacentre_MCM_sonar_data/Area_C/';
+
+files = dir( fullfile(dname,'*.png'));
+flist = {files.name};
+n_file =  length(flist);
+%file_ite = randperm(n_file);
+%fname = flist{file_ite(1)};
+ fname = flist{40}; %---> ok results
+dfname = strcat(dname, fname);
+
+Im = im2double(rgb2gray(imread(dfname)));
+Im = Im(850:end -850, 900:end - 900);
+
+%imagesc(Im)
+colormap gray
+
+imwrite(Im,'./Save/test_segmentation.png','png')
+
+%%
 
 % Number of states:
 n_state = 2;
-
-% Number of optimization step:
-n_step = 100;
 
 % Model distribution:
 distribution = 'MixtGauss';
@@ -30,8 +44,6 @@ verbose = false;
 % Sensibility f the convergence test:
 cv_sens = 1e-5;
 
-% Data path:
-dir_training = '/home/jeanbaptiste/Datasets/Sonar/Area_C_crops/Training/';
 
 % ST Parameters:
 filt_opt.J = 5; % scales
@@ -40,59 +52,19 @@ filt_opt.filter_type = 'morlet';
 scat_opt.oversampling = 2;
 scat_opt.M = 2;
 
-% CLASS 1 - RIPPLE - TRAINING: 
-label_ripple = 'Ripple/'; 
-path_to_training_ripple = fullfile(dir_training, label_ripple);
+% Load model:
+theta_est_ripple = load('./Save/Saved_model/theta_est_ripple_0.9.mat');
+theta_est_seabed = load('./Save/Saved_model/theta_est_seabed_0.9.mat');
 
-fprintf('------ TRAINING RIPPLE ------ \n')
-
-% ST:
-set_S_ripple = ST_class(path_to_training_ripple, filt_opt, scat_opt, n_image);
-
-% Prepare the scattering structure for HMM:
-for im=1:length(set_S_ripple)
-    set_S_ripple{im} = hmm_prepare_S(set_S_ripple{im}, n_state);
-end
-
-% Hmm model:
-[theta_est_ripple, ~, ~] = ...
-    conditional_EM(set_S_ripple, n_step, n_state, distribution, ...
-        eps_uni, verbose, 10, cv_sens);
-
-clear set_S_ripple
-
-% CLASS 2 - Mix - TRAINING: 
-label_seabed = 'Mix'; 
-path_to_training_seabed = fullfile(dir_training, label_seabed);
-
-fprintf('------ TRAINING SEABED ------ \n')
-
-% ST:
-set_S_seabed = ST_class(path_to_training_seabed, filt_opt, scat_opt, n_image);
-
-% Prepare the scattering structure for HMM:
-for im=1:length(set_S_seabed)
-    set_S_seabed{im} = hmm_prepare_S(set_S_seabed{im}, n_state);
-end
-%
-% Hmm model:
-[theta_est_seabed, ~, ~] = ...
-    conditional_EM(set_S_seabed, n_step, n_state, distribution, ...
-        eps_uni, verbose, 10, cv_sens);                          
-
-clear set_S_seabed
-    
+theta_est_ripple = theta_est_ripple.theta_est_ripple;
+theta_est_seabed = theta_est_seabed.theta_est_seabed;
 
 %% MAP - SEGMENTATION SCORE:
 fprintf('------ TESTING ------ \n')
-dname = '/home/jeanbaptiste//Datasets/Sonar/UDRC_datacentre_MCM_sonar_data/Area_C/';
-fname = 'mod_MUSCLE_COL2_080424_1_13_s_3506_3669_40_150.mat';
-dfname = strcat(dname, fname);
-load(dfname, 'sas_tile_raw');
-X = 20*log10(abs(sas_tile_raw)+1);
-clear sas_tile_raw
-X = rot90(X,-1);
-X = X(1:end - mod(size(X,1),2), 1:end - mod(size(X,2),2));
+dname = './Save/';
+fname_seg = 'test_segmentation.png';
+dfname = strcat(dname, fname_seg);
+X = im2double(imread(dfname));
 
 s_X = size(X);
 
@@ -100,10 +72,14 @@ x_range = 1:99:s_X(1);
 y_range = 1:99:s_X(2);
 
 segmentation = zeros(s_X(1),s_X(2));
+pmap_ripple = zeros(s_X(1),s_X(2));
+pmap_seabed = zeros(s_X(1),s_X(2));
 
 reverseStr = '';
 counter= 1;
 n_patch = (length(y_range)-1)*(length(x_range)-1);
+
+
 
 for i=1:(length(x_range)-1)
     for j=1:(length(y_range)-1)
@@ -151,27 +127,70 @@ for i=1:(length(x_range)-1)
         P_hat_se = mean(mean(tmp_P_hat_se));
         
         % Segmentation:
+        pmap_ripple(x_range(i):x_range(i+1),y_range(j):y_range(j+1)) = P_hat_ri;
+        pmap_seabed(x_range(i):x_range(i+1),y_range(j):y_range(j+1)) = P_hat_se;
         if P_hat_ri > P_hat_se
-            % Ripple:
+            % Ripple: %white
             segmentation(x_range(i):x_range(i+1),y_range(j):y_range(j+1)) = 1;
         else
-            % Seabed:
+            % Seabed: %Pink
             segmentation(x_range(i):x_range(i+1),y_range(j):y_range(j+1)) = 2;
         end
+        
+
+        
         
         counter = counter + 1;
     end
 end
 
+image_ori = figure;
+image_seg = figure;
+image_pRip = figure;
+image_pSea = figure;
 % Plot:
-figure
-subplot(2,1,1)
+figure(image_ori)
 imagesc(X)
-subplot(2,1,2)
-imagesc(segmentation)
+axis off
+title('image')
 colormap pink
+drawnow
 
+figure(image_seg)
+imagesc(segmentation)
+axis off
+title('segmentation')
+colormap pink
+drawnow
 
+%Rescalling
+pmap_ripple = pmap_ripple .* 10000;
+pmap_seabed = pmap_seabed .* 10000;
 
+% Reduce max
+max_seab = max(max(pmap_seabed));
+pmap_seabed(pmap_seabed==max_seab) = max(max(pmap_seabed(pmap_seabed~=max_seab)));
+max_rip = max(max(pmap_ripple));
+pmap_ripple(pmap_ripple==max_rip) = max(max(pmap_ripple(pmap_ripple~=max_rip)));
 
+figure(image_pRip)
+imagesc(pmap_ripple)
+title('Probability of ripple')
+axis off
+% h = colorbar;
+% set(h, 'ylim', [min(min(pmap_ripple(pmap_ripple~=0))) max(max(pmap_ripple))])
+drawnow
+
+figure(image_pSea)
+imagesc(pmap_seabed)
+title('Probability of seabed')
+axis off
+% h = colorbar;
+% set(h, 'ylim', [min(min(pmap_seabed(pmap_seabed~=0))) max(max(pmap_seabed))])
+drawnow
+
+saveas(image_ori, './Save/Plots/seg_original', 'epsc')
+saveas(image_seg, './Save/Plots/seg_result', 'epsc')
+saveas(image_pRip, './Save/Plots/seg_pmap_ripple', 'epsc')
+saveas(image_pSea, './Save/Plots/seg_pmap_seabed', 'epsc')
 

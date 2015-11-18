@@ -18,8 +18,8 @@ x = generate_square(false, true);
 % Precompute the wavelet transform operators that
 % will be applied to the image:
 % compute scattering with non-default options
-filt_opt.J = 4;
-filt_opt.L = 6;
+filt_opt.J = 3;
+filt_opt.L = 2;
 filt_opt.filter_type='morlet';
 scat_opt.oversampling = 2;
 scat_opt.M = 2;
@@ -65,11 +65,22 @@ image_scat(Sx, true, true)
 
 figure
 imagesc(x)
+colormap pink
 
-%% Histogram
-% for i=1:numel(Sx)
-%     for j=1:numel(Sx{i}.signal)
-%         figure
-%         hist(reshape(Sx{i}.signal{j},numel(Sx{i}.signal{j}),1))
-%     end
-% end
+%% UNCOMMENT TO SAVE PLOTS
+%  figure(1)
+% axis off
+% saveas(figure(1), './Save/Plots/2pop_square_layer0', 'epsc')
+% 
+% figure(2)
+% axis off
+% saveas(figure(2), './Save/Plots/2pop_square_layer1', 'epsc')
+% 
+% figure(3)
+% axis off
+% saveas(figure(3), './Save/Plots/2pop_square_layer2', 'epsc')
+% 
+% figure(4)
+% axis off
+% saveas(figure(4), './Save/Plots/2pop_square_original', 'epsc')
+

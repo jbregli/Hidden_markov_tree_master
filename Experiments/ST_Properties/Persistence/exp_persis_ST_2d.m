@@ -7,18 +7,18 @@ close all
 %x = generate_1st_diag(false);
 %x = uiuc_sample;
 %x = mandrill;
-%x = generate_square(true, true);
+x = generate_square(false, false, false, false, [28 28]);%true, true);
 %x = generate_circle(false, true);
-x = lena;
+%x = lena;
 
 % Precompute the wavelet transform operators that
 % will be applied to the image:
 % compute scattering with non-default options
 filt_opt.J = 3; % scales
-filt_opt.L = 4; % orientations
+filt_opt.L = 6; % orientations
 filt_opt.filter_type = 'morlet';
 scat_opt.oversampling = 2;
-scat_opt.M = 3;
+scat_opt.M = 2;
 
 [Wop, filters] = wavelet_factory_2d(size(x), filt_opt, scat_opt);
 

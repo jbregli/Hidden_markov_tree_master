@@ -9,13 +9,13 @@ close all
 
 %% Initialization:
 % Size of the simulated images:
-s_im = [60 60];
+s_im = [10 10];
 
 % Number of states:
 n_state = 2;
 
 % Number of "images" in the set;
-n_image = 100;
+n_image = 1;
 
 % Number of optimization step:
 n_step = inf;
@@ -36,11 +36,11 @@ cv_sens = 1e-6;
 path_to_set = {'square', n_image, s_im};
 
 % Parameters:
-filt_opt.J = 4; % scales
-filt_opt.L = 3; % orientations
+filt_opt.J = 3; % scales
+filt_opt.L = 1; % orientations
 filt_opt.filter_type = 'morlet';
 scat_opt.oversampling = 2;
-scat_opt.M = 2;
+scat_opt.M = 3;
 % filt_opt = struct();
 % scat_opt = struct();
 

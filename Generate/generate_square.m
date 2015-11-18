@@ -21,7 +21,7 @@ function [ image ] = generate_square(empty, noise, translate, rotate, size)
     % create an empty image (all zeros)
     image = zeros(size);
 
-    mask = floor(size./3);
+    mask = floor(size./2);
 
     fill_g = floor((size-mask) ./ 2);
     fill_d = size - fill_g - mask;
@@ -44,8 +44,8 @@ function [ image ] = generate_square(empty, noise, translate, rotate, size)
 
     % Translate:
     if translate == true
-        xmax = max(floor(size(1)/10), 5);
-        ymax = max(floor(size(2)/10), 5);
+        xmax = max(floor(size(1)/20), 5);
+        ymax = max(floor(size(2)/20), 5);
         xTrans = randi([-xmax,xmax]);
         yTrans = randi([-ymax, ymax]);
         image =  circshift(image,[xTrans, yTrans]);
