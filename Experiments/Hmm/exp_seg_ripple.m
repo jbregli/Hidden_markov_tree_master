@@ -67,9 +67,10 @@ dfname = strcat(dname, fname_seg);
 X = im2double(imread(dfname));
 
 s_X = size(X);
+s_X(:) = floor(s_X(:)/100) * 100 + 1 ;
 
-x_range = 1:99:s_X(1);
-y_range = 1:99:s_X(2);
+x_range = 1:100:s_X(1);
+y_range = 1:100:s_X(2);
 
 segmentation = zeros(s_X(1),s_X(2));
 pmap_ripple = zeros(s_X(1),s_X(2));
@@ -109,8 +110,18 @@ for i=1:(length(x_range)-1)
             reverseStr = repmat(sprintf('\b'), 1, length(msg));
         end
         
-        x = X(x_range(i):x_range(i+1),y_range(j):y_range(j+1),:);
-        
+%         if i == length(x_range)
+%             if j == length(y_range) 
+%                 x = X(x_range(i):end,y_range(j):end,:);
+%             else
+%                 x = X(x_range(i):end,y_range(j):y_range(j+1)-1,:);
+%             end
+%         elseif j == length(y_range)
+%             x = X(x_range(i):x_range(i+1)-1,y_range(j):end,:);
+%         else
+            x = X(x_range(i):x_range(i+1)-1,y_range(j):y_range(j+1)-1,:);
+%         end
+                
         % Scattering transform of the patch:
         Wop = wavelet_factory_2d(size(x), filt_opt, scat_opt);
         S_seg = scat(x, Wop);
@@ -144,23 +155,28 @@ for i=1:(length(x_range)-1)
     end
 end
 
+
+
 image_ori = figure;
 image_seg = figure;
 image_pRip = figure;
 image_pSea = figure;
 % Plot:
 figure(image_ori)
-imagesc(X)
+imagesc(X(1:s_X(1),1:s_X(2)))
 axis off
 title('image')
 colormap pink
 drawnow
 
 figure(image_seg)
-imagesc(segmentation)
+imagesc(segmentation(1:s_X(1),1:s_X(2)))
 axis off
 title('segmentation')
-colormap pink
+cmap = zeros(8,3);
+cmap(1:4,:) = repmat([204/255,164/255,131/255],4,1);
+cmap(5:8,:) = 1;
+colormap(cmap)
 drawnow
 
 %Rescalling
@@ -174,7 +190,7 @@ max_rip = max(max(pmap_ripple));
 pmap_ripple(pmap_ripple==max_rip) = max(max(pmap_ripple(pmap_ripple~=max_rip)));
 
 figure(image_pRip)
-imagesc(pmap_ripple)
+imagesc(pmap_ripple(1:s_X(1),1:s_X(2)))
 title('Probability of ripple')
 axis off
 % h = colorbar;
@@ -182,7 +198,7 @@ axis off
 drawnow
 
 figure(image_pSea)
-imagesc(pmap_seabed)
+imagesc(pmap_seabed(1:s_X(1),1:s_X(2)))
 title('Probability of seabed')
 axis off
 % h = colorbar;

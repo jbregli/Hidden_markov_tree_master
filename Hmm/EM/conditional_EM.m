@@ -221,7 +221,6 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, ...
         
         if cv_stat.overallCv > EM_metaparameters.cv_ratio
             cv_ach_bool = true;
-            EM_metaparameters.cv_ratio
             break
         end
 
@@ -235,6 +234,14 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, ...
     else
         fprintf('--- Convergence has not yet been achieved after %i steps. \n', ...
             step-1)
+        if EM_metaparameters.rerun == true
+            
+            fprintf('RE-RUN %i \n', EM_metaparameters.rerun_count)
+            EM_metaparameters.rerun_count = ...
+                EM_metaparameters.rerun_count +1 ;
+            [theta, ~, ~] = conditional_EM(set_S, ...
+                EM_metaparameters, options);
+        end
     end
 
     % Statistics on the number of converged pixels:

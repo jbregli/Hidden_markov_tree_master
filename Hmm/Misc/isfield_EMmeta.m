@@ -56,6 +56,15 @@ function [ EM_metaparameters] = isfield_EMmeta( EM_metaparameters)
     end    
     if ~isfield(EM_metaparameters, 'cv_ratio')
         EM_metaparameters.cv_ratio = 0.98;
+    end     
+    if ~isfield(EM_metaparameters, 'rerun')
+        EM_metaparameters.rerun = false;
+    end    
+    if ~isfield(EM_metaparameters, 'rerun_count')
+        EM_metaparameters.rerun_count = 0;
+    end     
+    if ~isfield(EM_metaparameters, 'rerun_lim')
+        EM_metaparameters.rerun_lim = 10;
     end    
 end
 

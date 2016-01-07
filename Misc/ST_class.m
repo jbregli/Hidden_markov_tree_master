@@ -119,7 +119,7 @@
 
                     set_S = [set_S {S}];
                 end
-            end
+            end            
         else
             disp('ST_class: unknown data format')
             set_S = [{}];
@@ -144,9 +144,9 @@
                     x = im2double(imread(fullfile(path_to_images, ...
                         allNames{rdm_spl(i)})));
                     
-                    % +++ TRICK: resize the image for faster computation:
+                    % +++ Resize to avoid wrong image sizes:
                     x = x(1:100,1:100);
-
+                    
                     % Pre-compute the WT op that will be applied to the image:
                     Wop = wavelet_factory_2d(size(x), filt_opt, scat_opt);
 
@@ -165,10 +165,11 @@
 
                     % ST:
                     x = im2double(imread(fullfile(path_to_images, ...
-                        allNames{rdm_spl(i)})));
-                    % +++ TRICK: resize the image for faster computation:
-                    x = x(1:100,1:100);                   
+                        allNames{rdm_spl(i)})));   
                     
+                    % +++ Resize to avoid wrong image sizes:
+                    x = x(1:100,1:100);
+                                        
                     
                     S = scat(x, Wop);
 
@@ -201,11 +202,53 @@
                     % ST:
                     tmp_x = load(fullfile(path_to_images, allNames{rdm_spl(i)}));
                     x = tmp_x.b;
+                    
                     S = scat(x, Wop);
 
                     set_S = [set_S {S}];
                 end
             end
+        elseif strcmp(format, 'ubyte')
+            % Add MNIST loader to the path:
+            addpath(path_to_set{1}{1})
+            
+            % Loard MNIST:
+            tmp_mnist = loadMNISTImages('train-images-idx3-ubyte');
+            tmp_label = loadMNISTLabels('train-labels-idx1-ubyte');
+            
+            tmp_mnist= reshape(tmp_mnist, sqrt(size(tmp_mnist,1)), ...
+                sqrt(size(tmp_mnist,1)), size(tmp_mnist,2));
+            
+            tmp_class = tmp_mnist(:,: ,tmp_label== path_to_set{1}{2});
+            
+            for i=1:n_image
+            	if i==1
+                	% Initilization w/ first image:
+                    x = tmp_class(:,:,rdm_spl(i));
+                    
+                    % Pre-compute the WT op that will be applied to the image:
+                    Wop = wavelet_factory_2d(size(x), filt_opt, scat_opt);
+                    
+                    tic;
+                    S = scat(x, Wop);
+                    time = toc;
+                    
+                    % Stock STs in a cell:
+                    set_S = [{} {S}];
+                else
+                    % Print time remaining:
+                    msg = sprintf('--- Image %i/%i --- Expected remaining time: %.4f s. \r ' ,...
+                        i, n_image, (n_image-i) * time);
+                    fprintf([reverseStr, msg]);
+                    reverseStr = repmat(sprintf('\b'), 1, length(msg));
+                    
+                    % ST:
+                    x = tmp_class(:,:,rdm_spl(i));
+                    S = scat(x, Wop);
+                    
+                    set_S = [set_S {S}];
+                end
+            end            
         else
             disp('ST_class: unknown data format')
             set_S = [{}];

@@ -15,7 +15,7 @@ close all
 n_training = 60; % Dataset training + testing has 81 images per class 
 
 % EM parameters:
-EM_metaparameters.n_step = inf;
+EM_metaparameters.n_step = 100;
 EM_metaparameters.n_state = 2;
 EM_metaparameters.distribution = 'MixtGauss';
 EM_metaparameters.eps_uni = true;
