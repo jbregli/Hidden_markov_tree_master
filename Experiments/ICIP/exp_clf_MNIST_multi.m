@@ -1,31 +1,37 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
 % This script realizes a classification test on few classes from the      %
-% Kylberg Non rotated texture dataset.                                    %
+% MNIST dataset.                                                          %
 %                                                                         %
-% BEST PARAMETER SO FAR: CS=0.8                                           %
-% n_image = 0; n_state = 2; n_step = 100; eps_uni= false; cv_sens = 1e-5; %
-% filt_opt.J = 5; filt_opt.L = 3; filt_opt.filter_type = 'morlet';        %
+% BEST PARAMETER SO FAR: CS=0.6                                           %
+% --- ST ---                                                              %                                                   
+% filt_opt.J = 4; filt_opt.L = 3; filt_opt.filter_type = 'morlet';        %
 % scat_opt.oversampling = 2; scat_opt.M = 2;                              %
+% --- EM ---                                                              %                                                   
+% EM_meta.n_step = 50; EM_meta.n_state = 2;                               %
+% EM_meta.distribution = 'MixtGauss'; EM_meta.eps_uni = true;             %
+% EM_meta.mixing = 10; EM_meta.cv_sens = 1e-4; EM_meta.cv_steps = 5;      %
+% EM_meta.cv_ratio = 0.8; EM_meta.rerun = true; EM_meta.rerun_count = 0;  %
+% EM_meta.rerun_lim = 20;                                                 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% clear all
-% close all
+clear all
+close all
 
 %% ===== Initialization: =====
 n_training = 5; % Dataset training + testing has 160 images per class 
 
 % EM parameters:
-EM_metaparameters.n_step = 40;
-EM_metaparameters.n_state = 2;
-EM_metaparameters.distribution = 'MixtGauss';
-EM_metaparameters.eps_uni = true;
-EM_metaparameters.mixing = 10;
-EM_metaparameters.cv_sens = 1e-4;
-EM_metaparameters.cv_steps = 5;
-EM_metaparameters.cv_ratio = 0.8;
-EM_metaparameters.rerun = true;
-EM_metaparameters.rerun_count = 0;
-EM_metaparameters.rerun_lim = 20;
+EM_meta.n_step = 50;
+EM_meta.n_state = 2;
+EM_meta.distribution = 'MixtGauss';
+EM_meta.eps_uni = true;
+EM_meta.mixing = 10;
+EM_meta.cv_sens = 1e-4;
+EM_meta.cv_steps = 5;
+EM_meta.cv_ratio = 0.8;
+EM_meta.rerun = true;
+EM_meta.rerun_count = 0;
+EM_meta.rerun_lim = 20;
 
 options.verbose = false;
 
@@ -42,8 +48,6 @@ im_format = 'ubyte';
 dir_data = '/home/jeanbaptiste/Datasets/Mnist/';
 
 % Labels available:
-% aluminium_foil , brown_bread , corduroy , cotton , cracker , linen , 
-% orange_peel , sandpaper , sponge , styrofoam
 S_label = {1, 2 , 3, 4, 5, 6, 7, 8, 9, 0}; 
 n_label = length(S_label);
 
@@ -51,7 +55,6 @@ msg_1 = sprintf('Classification between:');
 msg_2 = sprintf(' %s',  S_label{:});
 msg_3 = sprintf('\n');
 fprintf([msg_1 msg_2 msg_3])
-
 
 % Generate training set:        
 rdm_spl = randsample(1:5000, 5000);
@@ -75,12 +78,12 @@ for label=1:n_label
 
     % Prepare the scattering structure for HMM:
     for im=1:length(set_S)
-        set_S{im} = hmm_prepare_S(set_S{im}, EM_metaparameters.n_state);
+        set_S{im} = hmm_prepare_S(set_S{im}, EM_meta.n_state);
     end
 
     % Hmm model:
     [theta_est{label}, cv_stat{label}, ~] = ...
-        conditional_EM(set_S, EM_metaparameters, options);
+        conditional_EM(set_S, EM_meta, options);
 end
     
 %% MAP - CLASSIFICATION SCORE:
@@ -110,7 +113,7 @@ end
 for im=1:n_test
     for label=1:n_label
         S_test{label}{im} = hmm_prepare_S(S_test{label}{im},...
-            EM_metaparameters.n_state);
+            EM_meta.n_state);
         
         for label_model=1:n_label
             [tmp_P_hat, ~] = ...
@@ -118,6 +121,11 @@ for im=1:n_test
             
             P_hat(label, label_model) = mean(mean(tmp_P_hat));
         end
+        
+        % Rescaling:
+        tmp_mean = mean(P_hat);
+        P_hat = P_hat ./ repmat(tmp_mean,length(tmp_mean),1);
+        
     end
 end
 

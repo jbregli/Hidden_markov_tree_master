@@ -1,11 +1,18 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % This script realizes a classification test on few classes from the      %
-% Kylberg Non rotated texture dataset.                                    %
+% KTH texture dataset.                                                    %
 %                                                                         %
-% BEST PARAMETER SO FAR: CS=0.8                                           %
-% n_image = 0; n_state = 2; n_step = 100; eps_uni= false; cv_sens = 1e-5; %
-% filt_opt.J = 5; filt_opt.L = 3; filt_opt.filter_type = 'morlet';        %
+% BEST PARAMETER SO FAR: CS=0.5                                           %
+% n_training = 5; n_testing = 20;                                         %
+% --- ST ---                                                              %                                                   
+% filt_opt.J = 4; filt_opt.L = 3; filt_opt.filter_type = 'morlet';        %
 % scat_opt.oversampling = 2; scat_opt.M = 2;                              %
+% --- EM ---                                                              %                                                   
+% EM_meta.n_step = 50; EM_meta.n_state = 2;                               %
+% EM_meta.distribution = 'MixtGauss'; EM_meta.eps_uni = true;             %
+% EM_meta.mixing = 10; EM_meta.cv_sens = 1e-4; EM_meta.cv_steps = 5;      %
+% EM_meta.cv_ratio = 0.8; EM_meta.rerun = true; EM_meta.rerun_count = 0;  %
+% EM_meta.rerun_lim = 20;                                                 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear all
@@ -13,6 +20,7 @@ close all
 
 %% ===== Initialization: =====
 n_training = 5; % Dataset training + testing has 160 images per class 
+n_testing = 20;
 
 % EM parameters:
 EM_metaparameters.n_step = 50;
@@ -42,11 +50,12 @@ im_format = 'png';
 dir_data = '/home/jeanbaptiste/Datasets/Texture/KTH_TIPS/';
 
 % Labels available:
-% aluminium_foil , brown_bread , corduroy , cotton , cracker , linen , 
-% orange_peel , sandpaper , sponge , styrofoam
-S_label = {'aluminium_foil' , 'brown_bread', 'corduroy' , 'cotton' , ...
-    'cracker' , 'linen' , 'orange_peel' , 'sandpaper' , 'sponge' ,...
-    'styrofoam'}; 
+% 'aluminium_foil' , 'brown_bread', 'corduroy' , 'cotton' , ...
+%    'cracker' , 'linen' , 'orange_peel' , 'sandpaper' , 'sponge' ,...
+%    'styrofoam'
+    S_label = {'aluminium_foil' , 'brown_bread', 'corduroy' , 'cotton' , ...
+        'cracker' , 'linen' , 'orange_peel' , 'sandpaper' , 'sponge' ,...
+        'styrofoam'}; 
 n_label = length(S_label);
 
 msg_1 = sprintf('Classification between:');
@@ -67,7 +76,7 @@ end
 rdm_spl = randsample(1:min(allFile), min(allFile));
 
 rdm_training = rdm_spl(1:n_training);
-rdm_test = rdm_spl(n_training+1:n_training+ 20); % rdm_spl(n_training+1:end);
+rdm_test = rdm_spl(n_training+1:n_training+ n_testing); % rdm_spl(n_training+1:end);
 
 clear allFiles tmp_file tmp_name
 
@@ -128,6 +137,11 @@ for im=1:n_test
             
             P_hat(label, label_model) = mean(mean(tmp_P_hat));
         end
+        
+        % Rescaling:
+        tmp_mean = mean(P_hat);
+        P_hat = P_hat ./ repmat(tmp_mean,length(tmp_mean),1);
+      
     end
 end
 

@@ -239,8 +239,21 @@ function [ theta, cv_stat, dob] = conditional_EM(set_S, ...
             fprintf('RE-RUN %i \n', EM_metaparameters.rerun_count)
             EM_metaparameters.rerun_count = ...
                 EM_metaparameters.rerun_count +1 ;
-            [theta, ~, ~] = conditional_EM(set_S, ...
-                EM_metaparameters, options);
+            
+            if EM_metaparameters.rerun_count <= EM_metaparameters.rerun_lim
+                [theta, ~, ~] = conditional_EM(set_S, ...
+                    EM_metaparameters, options);
+            else
+                % Reduce cv ratio by 10%
+                EM_metaparameters.cv_ratio = EM_metaparameters.cv_ratio...
+                    * (1 - 0.1);
+                fprintf('Reducing convergence ratio to %.2f. \n', ...
+                    EM_metaparameters.cv_ratio)
+
+                EM_metaparameters.rerun_count = 0;
+                [theta, ~, ~] = conditional_EM(set_S, ...
+                    EM_metaparameters, options);
+            end
         end
     end
 
