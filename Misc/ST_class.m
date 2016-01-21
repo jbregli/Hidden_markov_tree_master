@@ -145,7 +145,7 @@
                         allNames{rdm_spl(i)})));
                     
                     % +++ Resize to avoid wrong image sizes:
-                    x = x(1:100,1:100);
+                    x = x(50:100,50:100);
                     
                     % Pre-compute the WT op that will be applied to the image:
                     Wop = wavelet_factory_2d(size(x), filt_opt, scat_opt);
@@ -168,7 +168,7 @@
                         allNames{rdm_spl(i)})));   
                     
                     % +++ Resize to avoid wrong image sizes:
-                    x = x(1:100,1:100);
+                    x = x(50:100,50:100);
                                         
                     
                     S = scat(x, Wop);

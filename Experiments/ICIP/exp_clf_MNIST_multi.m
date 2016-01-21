@@ -14,8 +14,8 @@
 % EM_meta.rerun_lim = 20;                                                 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clear all
-close all
+% clear all
+% close all
 
 %% ===== Initialization: =====
 n_training = 5; % Dataset training + testing has 160 images per class 
@@ -24,7 +24,7 @@ n_training = 5; % Dataset training + testing has 160 images per class
 EM_meta.n_step = 50;
 EM_meta.n_state = 2;
 EM_meta.distribution = 'MixtGauss';
-EM_meta.eps_uni = true;
+EM_meta.eps_uni = false;
 EM_meta.mixing = 10;
 EM_meta.cv_sens = 1e-4;
 EM_meta.cv_steps = 5;
@@ -48,7 +48,7 @@ im_format = 'ubyte';
 dir_data = '/home/jeanbaptiste/Datasets/Mnist/';
 
 % Labels available:
-S_label = {1, 2 , 3, 4, 5, 6, 7, 8, 9, 0}; 
+S_label = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0}; 
 n_label = length(S_label);
 
 msg_1 = sprintf('Classification between:');
@@ -85,7 +85,10 @@ for label=1:n_label
     [theta_est{label}, cv_stat{label}, ~] = ...
         conditional_EM(set_S, EM_meta, options);
 end
-    
+% tmp_load = load('./Save/Models/Mnist/IMPORTANT_theta_N5_est_0.8.mat');
+% theta_est = tmp_load.theta_est;
+
+
 %% MAP - CLASSIFICATION SCORE:
 fprintf('------ TESTING ------ \n')
 
@@ -97,7 +100,8 @@ confusion = zeros(n_label, n_label);
 
 % P_hat = matrix(n_label, n_label)
 % P_hat(i,j) probability of an object of class i given model for class j
-P_hat = zeros(n_label, n_label);
+P_hat = zeros(n_test * n_label, n_label);
+test_label = zeros(n_test * n_label, 1);
 
 path_to_test = cell(1, n_label);
 S_test = cell(1, n_label);
@@ -110,6 +114,7 @@ for label = 1:n_label
 end
 
 % Prepare the scattering structure for HMM:
+im_count = 1;
 for im=1:n_test
     for label=1:n_label
         S_test{label}{im} = hmm_prepare_S(S_test{label}{im},...
@@ -119,25 +124,25 @@ for im=1:n_test
             [tmp_P_hat, ~] = ...
                 hmm_MAP(S_test{label}{im}, theta_est{label_model}, false);
             
-            P_hat(label, label_model) = mean(mean(tmp_P_hat));
+            P_hat(im_count, label_model) = mean(mean(tmp_P_hat));
+            test_label(im_count) = label;
         end
-        
+        im_count = im_count + 1;
+
         % Rescaling:
-        tmp_mean = mean(P_hat);
-        P_hat = P_hat ./ repmat(tmp_mean,length(tmp_mean),1);
-        
+%         tmp_mean = mean(P_hat(:,:, im_count));
+%         P_hat(:,:, im_count) = P_hat(:,:, im_count) ./ repmat(tmp_mean,length(tmp_mean),1);         
     end
 end
-
-for im=1:n_test  
-    for label= 1:n_label
-        [~, max_idx] = max(P_hat(label,:));
-        if max_idx == label
-            confusion(label,label) = confusion(label,label) + 1/n_test;
-        else
-            confusion(label,max_idx) = confusion(label,max_idx) + 1/n_test;
-        end
-    end
+for im=1:(n_test * n_label)
+    [~, max_idx] = max(P_hat(im,:));
+    if max_idx == test_label(im)
+        confusion(test_label(im),test_label(im)) = ...
+            confusion(test_label(im),test_label(im)) + 1/n_test;
+    else
+    	confusion(test_label(im), max_idx) = ...
+            confusion(test_label(im), max_idx) + 1/n_test;
+	end
 end
 
 fprintf('The total classification score is %.4f. \n', ...

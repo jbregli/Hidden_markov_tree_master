@@ -23,9 +23,11 @@ close all
 % Number of experiment:
 n_exp = 100;
 score = cell(1,n_exp);
-csv_name = 'stat_clf_KTH_multi_N5_J4_L3.csv';
+csv_name = 'V2_stat_clf_KTH_multi_N5_J4_L3.csv';
+mat_name = 'V2_theta_N10_est_';
 max_score = 0;
 format = 'mat';
+directory = './Save/Models/Mnist/';
 
 for experiment=1:n_exp
     fprintf('--------- EXPERIMENT %i/%i --------- \n', experiment, n_exp)

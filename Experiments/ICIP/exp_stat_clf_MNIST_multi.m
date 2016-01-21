@@ -16,34 +16,36 @@ close all
 % Number of experiment:
 n_exp = 100;
 score = cell(1,n_exp);
-csv_name = 'stat_clf_Mnist_multi_N5_J4_L3.csv';
+csv_name = 'V4_stat_clf_Mnist_multi_N5_J3_L3.csv';
+mat_name = 'V4_theta_N5_est_';
 max_score = 0;
 format = 'mat';
+directory = './Save/Models/Mnist/';
 
 for experiment=1:n_exp
     fprintf('--------- EXPERIMENT %i/%i --------- \n', experiment, n_exp)
     
     %% ===== PREPARE: SCHMT =====
-    n_training = 5; % Dataset training + testing has 160 images per class 
+    n_training = 5;
     n_testing = 20;
 
     % EM parameters:
-    EM_metaparameters.n_step = 50;
-    EM_metaparameters.n_state = 2;
-    EM_metaparameters.distribution = 'MixtGauss';
-    EM_metaparameters.eps_uni = true;
-    EM_metaparameters.mixing = 10;
-    EM_metaparameters.cv_sens = 1e-4;
-    EM_metaparameters.cv_steps = 5;
-    EM_metaparameters.cv_ratio = 0.8;
-    EM_metaparameters.rerun = true;
-    EM_metaparameters.rerun_count = 0;
-    EM_metaparameters.rerun_lim = 20;
+    EM_meta.n_step = 50;
+    EM_meta.n_state = 2;
+    EM_meta.distribution = 'MixtGauss';
+    EM_meta.eps_uni = true;
+    EM_meta.mixing = 10;
+    EM_meta.cv_sens = 1e-4;
+    EM_meta.cv_steps = 5;
+    EM_meta.cv_ratio = 0.8;
+    EM_meta.rerun = true;
+    EM_meta.rerun_count = 0;
+    EM_meta.rerun_lim = 20;
 
     options.verbose = false;
 
     % ST Parameters:
-    filt_opt.J = 4; % scales
+    filt_opt.J = 3; % scales
     filt_opt.L = 3; % orientations
     filt_opt.filter_type = 'morlet';
     scat_opt.oversampling = 2;
@@ -84,12 +86,12 @@ for experiment=1:n_exp
 
         % Prepare the scattering structure for HMM:
         for im=1:length(set_S)
-            set_S{im} = hmm_prepare_S(set_S{im}, EM_metaparameters.n_state);
+            set_S{im} = hmm_prepare_S(set_S{im}, EM_meta.n_state);
         end
 
         % Hmm model:
         [theta_est{label}, cv_stat{label}, ~] = ...
-            conditional_EM(set_S, EM_metaparameters, options);
+            conditional_EM(set_S, EM_meta, options);
     end
     
     %% ===== MAP - CLASSIFICATION SCORE: =====
@@ -116,35 +118,37 @@ for experiment=1:n_exp
     end
 
     % Prepare the scattering structure for HMM:
+    im_count = 1;
     for im=1:n_test
         for label=1:n_label
             S_test{label}{im} = hmm_prepare_S(S_test{label}{im},...
-                EM_metaparameters.n_state);
+                EM_meta.n_state);
 
             for label_model=1:n_label
                 [tmp_P_hat, ~] = ...
                     hmm_MAP(S_test{label}{im}, theta_est{label_model}, false);
 
-                P_hat(label, label_model) = mean(mean(tmp_P_hat));
+                P_hat(im_count, label_model) = mean(mean(tmp_P_hat));
+                test_label(im_count) = label;
             end
+            im_count = im_count + 1;
 
             % Rescaling:
-            tmp_mean = mean(P_hat);
-            P_hat = P_hat ./ repmat(tmp_mean,length(tmp_mean),1);
-
+    %         tmp_mean = mean(P_hat(:,:, im_count));
+    %         P_hat(:,:, im_count) = P_hat(:,:, im_count) ./ repmat(tmp_mean,length(tmp_mean),1);         
+        end
+    end
+    for im=1:(n_test * n_label)
+        [~, max_idx] = max(P_hat(im,:));
+        if max_idx == test_label(im)
+            confusion(test_label(im),test_label(im)) = ...
+                confusion(test_label(im),test_label(im)) + 1/n_test;
+        else
+            confusion(test_label(im), max_idx) = ...
+                confusion(test_label(im), max_idx) + 1/n_test;
         end
     end
 
-    for im=1:n_test  
-        for label= 1:n_label
-            [~, max_idx] = max(P_hat(label,:));
-            if max_idx == label
-                confusion(label,label) = confusion(label,label) + 1/n_test;
-            else
-                confusion(label,max_idx) = confusion(label,max_idx) + 1/n_test;
-            end
-        end
-    end    
     
 
     score{experiment}.clf_score = sum(diag(confusion)) / n_label;
@@ -154,22 +158,20 @@ for experiment=1:n_exp
         score{experiment}.clf_score)
 
     if score{experiment}.clf_score > max_score
-        delete('./Save/Models/Mnist/*.mat');        
+        delete([directory mat_name '*.mat']);        
         
         max_score = score{experiment}.clf_score;
         % Save the model:
-        directory = './Save/Models/Mnist/';
-        name = 'theta_est_';
-
-        save([directory name num2str(max_score) '.mat'],'theta_est');       
+        save([directory mat_name num2str(max_score) '.mat'],'theta_est');       
     end
    
     %% ===== CSV WRITTING: =====
     csv_line = [score{experiment}.clf_score];
     
-    dlmwrite (csv_name,csv_line, '-append');
+    dlmwrite ([directory csv_name],csv_line, '-append');
     
-    clearvarlist = ['clearvarlist'; setdiff(who,{'n_exp';'score';'csv_name';'max_score';'format'})];
+    clearvarlist = ['clearvarlist'; setdiff(who,{'n_exp';'score'; ...
+        'csv_name';'max_score';'format';'mat_name';'directory'})];
     clear(clearvarlist{:})
 end
 

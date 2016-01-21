@@ -8,7 +8,7 @@
 % scat_opt.oversampling = 2; scat_opt.M = 2;                              %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% clear all
+clear all
 close all
 
 
@@ -25,7 +25,7 @@ options.verbose = false;
 filt_opt.J = 4; % scales
 filt_opt.L = 3; % orientations
 filt_opt.filter_type = 'morlet';
-scat_opt.oversampling = 2;
+scat_opt.oversampling = 20;
 scat_opt.M = 2;
 
 %% ===== PREPARE DATA: =====
@@ -97,8 +97,6 @@ labels = labels(shuffler,:);
 options = {};
 svm_params = svm_cross_validation(labels, double(features), options);
 svm_model = svmtrain(labels, double(features), svm_params);
-
-n_test = length(rdm_test);
 
 %% ===== TESTING: ======
 fprintf('------ TESTING ------ \n')
