@@ -2,7 +2,7 @@
 % Performs:   CLASSIFICATION "One vs All"                                 %
 % on:         KTH TEXTURE DATASET (can be reduce to some classes only)    %
 % using:      SCN+SVM.                                                    %
-% testing:    Reduced size                                                %
+% testing:    Full                                                        %
 %                                                                         %
 % USAGE:                                                                  %
 %    1) Change DIR_DATA in the script to point to the dataset             %

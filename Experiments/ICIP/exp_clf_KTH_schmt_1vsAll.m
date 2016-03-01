@@ -1,28 +1,47 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         OK
-% This script realizes a classification test on few classes from the      %
-% Kylberg Non rotated texture dataset.                                    %
+% Performs:   CLASSIFICATION "One vs All"                                 %
+% on:         KTH TEXTURE DATASET (can be reduce to some classes only)    %
+% using:      SCHMT                                                       %
+% testing:    Full                                                        %
 %                                                                         %
-% BEST PARAMETER SO FAR: CS=0.8                                           %
-% n_image = 0; n_state = 2; n_step = 100; eps_uni= false; cv_sens = 1e-5; %
-% filt_opt.J = 5; filt_opt.L = 3; filt_opt.filter_type = 'morlet';        %
-% scat_opt.oversampling = 2; scat_opt.M = 2;                              %
+% USAGE:                                                                  %
+%    1) Change DIR_DATA in the script to point to the dataset             %
+%    2) Set the number of training points 'n_training', the number of     %
+%    testing points 'n_testing' ('full' for the complete rest of the      %
+%    dataset for testing). Set also the scattering architecture (see      %
+%    scatnet documentation if needed).                                    %
+%    3) Select the label you are insterested in 'tested_label' (int       %
+%    between 1 and 10.                                                    %
+%                                                                         %
+% REQUIRE:                                                                %
+%    1) scatnet-master                                                    %
+%       http://www.di.ens.fr/data/software/scatnet/                       %
+%    2) Libsvm-3.11                                                       %
+%       Included in ./Misc just install it                                %
+%    3) Download KTH-TIPS                                                 %
+%       http://www.nada.kth.se/cvap/databases/kth-tips/download.html      %
+%                                                                         %
+% PARAMETERS:                                                             %
+%    - Scattering transfrom:                                              %
+%       J=3; L=3; M = 2; filter_type='morlet'; oversampling = 2;          %
+%    - HMT:                                                               %
+%       n_step = 50; n_state = 2; distribution = 'MixtGauss';             %
+%       eps_uni = true; mixing = 10; cv_sens = 1e-4; cv_steps = 5;        %
+%       cv_ratio = 0.8; rerun = true; rerun_count = 0; rerun_lim = 20;    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% clear all
-% close all
-
+clear all
+close all
 
 %% ===== Initialization: =====
-n_testing = 810;
 % 1 vs All testing label:
 tested_label = 'styrofoam';
-% Labels available:
 % 'aluminium_foil' , 'brown_bread', 'corduroy' , 'cotton' , ...
 %    'cracker' , 'linen' , 'orange_peel' , 'sandpaper' , 'sponge' ,...
 %    'styrofoam'
 
 % Load model
-tmp_load = load('./Save/Models/KTH/V4_theta_N2_est_0.1654.mat');
+tmp_load = load('./Save/Models/KTH/V4_theta_N2_est_0.165.mat');
 theta_est = tmp_load.theta_est;
 
 % ST Parameters:
@@ -90,8 +109,8 @@ fprintf('------ TESTING ------ \n')
 
 clf_score = 0;
 confusion = zeros(n_label);
-for test_im=1:n_testing
-    msg_4 = sprintf('Testing example %i/%i \n', test_im, n_testing);
+for test_im=1:n_test
+    msg_4 = sprintf('Testing example %i/%i \n', test_im, n_test);
     msg_5 = sprintf('Clf_score = %i \n',  clf_score);
     
     if test_im == 1

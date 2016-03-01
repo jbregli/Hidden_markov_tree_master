@@ -8,9 +8,8 @@
 % scat_opt.oversampling = 2; scat_opt.M = 2;                              %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% clear all
-% close all
-
+clear all
+close all
 
 %% ===== Initialization: =====
 n_testing = 810;
